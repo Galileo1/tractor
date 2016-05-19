@@ -32,5 +32,5 @@ gulp.task('test-client', ['lint-client'], test.client);
 gulp.task('reload', reload);
 gulp.task('watch', ['reload'], watch);
 
-gulp.task('server', ['test-server', 'watch']);
-gulp.task('client', ['fonts', 'images', 'markup', 'styles', 'watch', 'test-client']);
+gulp.task('server', ['test-server']);
+gulp.task('client', ['fonts', 'images', 'markup', 'styles', 'bundle']);
