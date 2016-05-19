@@ -1,11 +1,11 @@
 before_script:
   - npm install -g gulp
 language: node_js
-node_js: 
+node_js:
 - "4"
 # whitelist
-branches:  
+branches:
     - integrationCI    
-script: 
+script:
     - gulp server
     - gulp client
