@@ -1,13 +1,12 @@
-before_script:
-  - npm install -g gulp
-  - gem update --system 2.5.1
-  - gem --version
-install: 
-  - gem install sass
-  - npm install gulp-ruby-sass
 language: node_js
 node_js:
 - "4"
+before_script:
+  - npm install -g gulp
+  - gem update --system 2.5.1
+  - gem --version 
+  - gem install sass
+  - npm install gulp-ruby-sass
 # whitelist
 branches:
     - integrationCI    
