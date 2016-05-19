@@ -4,7 +4,7 @@ before_script:
   - gem --version
 install: 
   - gem install sass
-  - gulp-ruby-sass
+  - npm install gulp-ruby-sass
 language: node_js
 node_js:
 - "4"
