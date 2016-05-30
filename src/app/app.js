@@ -34,7 +34,7 @@ require('./features/MockDataEditor/MockDataEditorController');
 require('./Core/Core');
 require('./Core/Services/FileStructureService');
 require('./Core/Services/HttpResponseInterceptor');
-require('./Core/Services/RealTimeService');
+//require('./Core/Services/RealTimeService');
 
 // Application Init:
 var tractor = angular.module('tractor', [
