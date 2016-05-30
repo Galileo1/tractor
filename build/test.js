@@ -33,6 +33,7 @@ function server (reportTaskDone) {
             console.log(error);
             this.destroy();
             reportTaskDone();
+            process.exit(1);
         }))
         .pipe(istanbul.writeReports({
             dir: './reports/server'

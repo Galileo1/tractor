@@ -30,7 +30,7 @@ describe('server/cli/init: create-base-test-files:', () => {
         return createBaseTestFiles.run('')
         .then(() => {
             expect(fs.readFileAsync).to.have.been.calledWith(path.join(__dirname, '/base-file-sources/world.js'));
-            expect(fs.writeFileAsync).to.have.been.calledWith(path.join(process.cwd(), '/support/world.js'), 'world');
+            expect(fs.writeFileAsync).to.have.been.calledWith(path.join(process.cwd(), '/support/world.js'), 'worl');
         })
         .finally(() => {
             fs.openAsync.restore();
