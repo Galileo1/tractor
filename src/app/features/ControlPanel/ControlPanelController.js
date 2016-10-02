@@ -32,11 +32,16 @@ var ControlPanelController = (function () {
             }
         });
         this.environment = _.first(this.environments);
+        this.maxInstance = _.first(this.maxInstances)
     }
 
     ControlPanelController.prototype.runProtractor = function () {
-        this.runnerService.runProtractor();
+        this.runnerService.runProtractor({           
+           // instances : this.maxInstance
+        });        
     };
+
+    ControlPanelController.prototype.maxInstances = ['1', '2', '3', '4', '5'];
 
     ControlPanelController.prototype.isServerRunning = function () {
         return this.serverStatusService.isServerRunning();
