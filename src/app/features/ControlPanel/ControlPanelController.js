@@ -37,7 +37,7 @@ var ControlPanelController = (function () {
 
     ControlPanelController.prototype.runProtractor = function () {
         this.runnerService.runProtractor({           
-           // instances : this.maxInstance
+            instances : this.maxInstance
         });        
     };
 
