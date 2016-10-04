@@ -69,6 +69,7 @@ function startProtractor (socket, runOptions) {
             reject(new TractorError('to run a single feature, `feature` must be defined.'));
             return deferred;
         } else {
+            runOptions["instances"] = 1;
             featureToRun = join(config.testDirectory, '/features', '/**/', `${runOptions.feature}.feature`);
         }
     } else {
@@ -76,8 +77,8 @@ function startProtractor (socket, runOptions) {
     }
 
     let specs = featureToRun;
-
-    let protractor = spawn('node', [PROTRACTOR_PATH, E2E_PATH, '--baseUrl', runOptions.baseUrl, '--specs', specs]);
+    
+    let protractor = spawn('node', [PROTRACTOR_PATH, E2E_PATH, '--capabilities.maxInstances', runOptions.instances, '--baseUrl', runOptions.baseUrl, '--specs', specs]);
 
     protractor.stdout.on('data', sendDataToClient.bind(socket));
     protractor.stderr.on('data', sendErrorToClient.bind(socket));

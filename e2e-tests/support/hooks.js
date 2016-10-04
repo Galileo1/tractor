@@ -2,9 +2,8 @@
 
 /* eslint-disable no-var, prefer-arrow-callback */
 var cucumber = require('cucumber');
-var cucumberHtmlReport = require('cucumber-html-report');
+var reporter = require('cucumber-html-reporter');
 var log = require('npmlog');
-var moment = require('moment');
 var path = require('path');
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
@@ -12,7 +11,10 @@ var fs = Promise.promisifyAll(require('fs'));
 
 function createReporter () {
     /* eslint-disable new-cap */
-    var jsonFormatter = cucumber.Listener.JsonFormatter();
+    var jsonFormatter = cucumber.Listener.JsonFormatter();    
+    var mkDir =  getFileName('tractorDir_', null) 
+    var baseDirReporting = path.join(__dirname, '../', 'report', mkDir)
+    fs.mkdirAsync(baseDirReporting)   
     var outputDir = path.join(__dirname, '../', 'report')
     jsonFormatter.log = jsonReportWriter;
     return jsonFormatter;
@@ -31,20 +33,28 @@ function createReporter () {
         });
     }
 
-    function htmlReportWriter (cucumberReport) {
+    function htmlReportWriter (cucumberReport) {        
         var htmlFileName = getFileName('tractorReport_', 'html');
-        var report = new cucumberHtmlReport({
-            source: cucumberReport,
-            dest: outputDir,
-            name: htmlFileName
-        });
-        report.createReport();
+        var outputFile = path.join(outputDir , htmlFileName);
+        var options = {
+            theme: 'bootstrap',
+            jsonDir: outputDir,
+            output: outputFile,
+            reportSuiteAsScenarios: true            
+        };
+        reporter.generate(options);
     }
 
     function getFileName (file, extension) {
-        var reportTimestamp = moment().format('YYYY-MM-DD_HH-mm-ss');
         /* eslint-disable prefer-template */
-        return file + reportTimestamp + '.' + extension;
+        if (extension !== null) { 
+
+            return file + new Date().toLocaleString().replace(/[\/\\:]/g,"-") + '.' + extension;
+
+        } else  {
+
+            return file + new Date().toLocaleString().replace(/[\/\\:]/g,"-");
+        }
     }
 }
 
