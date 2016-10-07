@@ -77,18 +77,25 @@ var createFilterModelConstructor = function (
         }
     }
 
-    function toSingleAST () {
-        var locatorLiteral = ast.literal(this.locator);
+    function toSingleAST () {               
         var template = '';
 
-        if (!this.isText) {
+        if (!this.isText) {            
+            var locatorLiteral = ast.literal(this.locator);            
             template += 'by.<%= type %>(<%= locator %>)';
             return ast.expression(template, {
                 type: ast.identifier(this.type),
                 locator: locatorLiteral
             });
         } else {
-            template += 'by.cssContainingText(\'*\', <%= locator %>)';
+            console.log(this.locator);
+            var tempLocator = this.locator.replace(/"/g,"");
+            console.log(tempLocator);
+            var locatorLiteral = ast.literal(tempLocator);
+            //console.log(locatorLiteral.value.replace(/"/g,""));
+            //template += 'by.cssContainingText(\'*\', <%= locator %>)';
+            console.log(locatorLiteral);
+            template += 'by.cssContainingText(<%= locator %>)';
             return ast.expression(template, {
                 locator: locatorLiteral
             });
