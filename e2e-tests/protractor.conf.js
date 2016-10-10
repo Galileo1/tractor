@@ -2,6 +2,7 @@
 exports.config = {
     allScriptsTimeout: 11000,
     specs: ['features/**/*.feature'],
+    seleniumAddress: 'http://127.0.0.1:4444/wd/hub',
     // capabilities: { 'browserName': 'chrome' },
     capabilities: {
       'browserName': 'chrome',
@@ -10,7 +11,7 @@ exports.config = {
      //    'args': ['--load-extension=' + 'T:\\Test\\Private\\NextGen\\gighmmpiobklfepjocnamgkkbiglidom\\3.2.0_0']
      // }
       'shardTestFiles': true,
-      'maxInstances': 1
+      'maxInstances': 2
 },
     framework: 'cucumber',    
     cucumberOpts: {
