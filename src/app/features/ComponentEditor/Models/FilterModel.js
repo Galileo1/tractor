@@ -43,7 +43,7 @@ var createFilterModelConstructor = function (
         });
 
         this.type = _.first(this.types);
-        this.locator = '';
+        this.locator = '';        
     };
 
     FilterModel.prototype.types = ['model', 'binding', 'text', 'css', 'options', 'repeater'];
@@ -54,7 +54,7 @@ var createFilterModelConstructor = function (
         if (this.isNested) {
             return toNestedAST.call(this);
         } else {
-            return toSingleAST.call(this);          
+            return toSingleAST.call(this);
         }
     }
 
@@ -87,15 +87,16 @@ var createFilterModelConstructor = function (
                 type: ast.identifier(this.type),
                 locator: locatorLiteral
             });
-        } else {
-            var locator = this.locator.split(",");          
-            var cssLiteral = ast.literal(locator[0]);
-            var stringLiteral = ast.literal(locator[1]);           
-            template += 'by.cssContainingText(<%= cssSelector %>,<%= searchString %>)';
+        } else {                                   
+            var locatorElement = this.locator.split(",");          
+            var cssLiteral = ast.literal(locatorElement[0]);
+            var stringLiteral = ast.literal(locatorElement[1]);                     
+            template += 'by.cssContainingText(<%= locator %>,<%= searchString %>)';                   
             return ast.expression(template, {
-                cssSelector: cssLiteral,
+                locator: cssLiteral,
                 searchString: stringLiteral
             });
+            
         }
     }
 };
