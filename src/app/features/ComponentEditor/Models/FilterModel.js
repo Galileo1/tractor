@@ -54,7 +54,7 @@ var createFilterModelConstructor = function (
         if (this.isNested) {
             return toNestedAST.call(this);
         } else {
-            return toSingleAST.call(this);
+            return toSingleAST.call(this);          
         }
     }
 
@@ -88,16 +88,13 @@ var createFilterModelConstructor = function (
                 locator: locatorLiteral
             });
         } else {
-            console.log(this.locator);
-            var tempLocator = this.locator.replace(/"/g,"");
-            console.log(tempLocator);
-            var locatorLiteral = ast.literal(tempLocator);
-            //console.log(locatorLiteral.value.replace(/"/g,""));
-            //template += 'by.cssContainingText(\'*\', <%= locator %>)';
-            console.log(locatorLiteral);
-            template += 'by.cssContainingText(<%= locator %>)';
+            var locator = this.locator.split(",");          
+            var cssLiteral = ast.literal(locator[0]);
+            var stringLiteral = ast.literal(locator[1]);           
+            template += 'by.cssContainingText(<%= cssSelector %>,<%= searchString %>)';
             return ast.expression(template, {
-                locator: locatorLiteral
+                cssSelector: cssLiteral,
+                searchString: stringLiteral
             });
         }
     }
