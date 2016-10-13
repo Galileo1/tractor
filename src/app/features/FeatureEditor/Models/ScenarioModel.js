@@ -19,6 +19,9 @@ var createScenarioModelConstructor = function (
     var ScenarioModel = function ScenarioModel () {
         var stepDeclarations = [];
         var examples = [];
+        var scenarioTag;
+        
+        this.scenarioTags = this.scenarioTagss;
 
         Object.defineProperties(this, {
             stepDeclarations: {
@@ -40,15 +43,28 @@ var createScenarioModelConstructor = function (
                 get: function () {
                     return toFeatureString.call(this);
                 }
+            },
+            scenarioTag: {
+                 get: function () {
+                      return scenarioTag;
+                 },
+                 set: function (newTag) {
+                      scenarioTag = newTag;                
+                 }
             }
+
         });
 
         this.name = '';
+        this.scenarioTag = _.first(this.scenarioTags);      
+
     };
 
     ScenarioModel.prototype.addStepDeclaration = function () {
         this.stepDeclarations.push(new StepDeclarationModel());
     };
+
+    ScenarioModel.prototype.scenarioTagss = ['@Given', '@When', '@Then'];
 
     ScenarioModel.prototype.removeStepDeclaration = function (toRemove) {
         _.remove(this.stepDeclarations, function (stepDeclaration) {
@@ -76,14 +92,18 @@ var createScenarioModelConstructor = function (
         .unique().value();
     }
 
-    function toFeatureString () {
+    function toFeatureString () {        
+
         var scenario = 'Scenario' + (this.examples.length ? ' Outline' : '') + ': ' + this.name;
 
         var stepDeclarations = _.map(this.stepDeclarations, function (stepDeclaration) {
             return FeatureIndent + FeatureIndent + stepDeclaration.feature;
         });
 
-        var lines = [scenario, stepDeclarations];
+        var scenarioTag = this.scenarioTag;
+
+        var lines = ((this.scenarioTag) ? [scenarioTag, FeatureIndent + scenario, stepDeclarations] : [scenario, stepDeclarations])
+        //var lines = [scenario, stepDeclarations];
 
         if (this.examples.length) {
             lines.push(FeatureIndent + FeatureIndent + 'Examples:');
@@ -95,6 +115,7 @@ var createScenarioModelConstructor = function (
         }
 
         lines = _.flatten(lines);
+        console.log(lines);
         return lines.join(FeatureNewLine);
     }
 };
@@ -105,5 +126,5 @@ FeatureEditor.factory('ScenarioModel', function (
     FeatureIndent,
     FeatureNewLine
 ) {
-    return createScenarioModelConstructor(StepDeclarationModel, ExampleModel, FeatureIndent, FeatureNewLine);
+  return createScenarioModelConstructor(StepDeclarationModel, ExampleModel, FeatureIndent, FeatureNewLine);
 });

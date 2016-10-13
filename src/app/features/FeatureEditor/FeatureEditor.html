@@ -36,7 +36,7 @@
         </section>
 
         <section class="file-editor">
-            <section ng-show="featureEditor.fileModel.name">
+            <section ng-show="featureEditor.fileModel.name">                
                 <section class="file-editor__container">
                     <h2>Feature:</h2>
 
@@ -59,7 +59,7 @@
                         example="to be able to do something">
                     </tractor-text-input>
                 </section>
-
+                
                 <section class="file-editor__container">
                     <h2>Scenarios:</h2>
 
@@ -67,6 +67,13 @@
                         <li class="file-editor__list-item"
                             ng-repeat="scenario in featureEditor.fileModel.scenarios"
                             ng-class="{ 'file-editor__list-item--minimised': scenario.minimised }">
+
+                            <section>
+                                 <tractor-select
+                                    label="ScenarioTag"
+                                    model="scenario">
+                                 </tractor-select>
+                            </section>
 
                             <h3 class="file-editor__list-item-name">{{ scenario.name }}</h3>
 
