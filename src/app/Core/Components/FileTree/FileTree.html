@@ -72,11 +72,11 @@
             tractor-drag-file>
             <div ng-include="'file-options.html'"></div>
 
-            <p class="file-tree__item-name"
+            <p class="file-tree__item-name_{{fileTree.getPending(item) }}"
                 ng-if="item.name && !item.editingName"
                 ng-click="fileTree.openFile(item)"
                 ng-dblclick="fileTree.editName(item)">
-                {{ fileTree.getName(item) }}
+                {{ fileTree.getName(item) }} 
             </p>
             <div ng-include="'rename-input.html'"></div>
         </li>

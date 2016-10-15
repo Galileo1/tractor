@@ -33,4 +33,4 @@ gulp.task('reload', reload);
 gulp.task('watch', ['reload'], watch);
 
 gulp.task('server', ['test-server', 'watch']);
-gulp.task('client', ['fonts', 'images', 'markup', 'styles', 'watch', 'test-client']);
+gulp.task('client', ['fonts', 'images', 'markup', 'styles', 'bundle']);

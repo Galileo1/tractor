@@ -41,6 +41,14 @@ var FileTreeController = (function () {
         return item.name;
     };
 
+    FileTreeController.prototype.getPending = function (item) {
+        if (item.isPending) {           
+            return true;
+        }else {
+            return false;
+        }        
+    };
+
     FileTreeController.prototype.addDirectory = function (directory) {
         this.fileStructureService.addDirectory(this.type, {
             path: directory.path

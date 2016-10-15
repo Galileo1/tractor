@@ -18,7 +18,24 @@ tractor-file-tree .file-tree__header {
     padding-left: $large-spacing;
 }
 
-tractor-file-tree .file-tree__item-name {
+@keyframes example {
+    from {background-color: red;}
+    to {background-color: yellow;}
+}
+
+tractor-file-tree .file-tree__item-name_true {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    text-decoration: none;
+    color: $font-dark;
+    white-space: nowrap;
+    background-color: red;
+     animation-name: example;
+     animation-duration: 4s;
+}
+
+tractor-file-tree .file-tree__item-name_false {
     padding: 0;
     margin: 0;
     display: inline-block;

@@ -2,6 +2,7 @@
 
 // Constants:
 const REQUIRE_QUERY = 'CallExpression[callee.name="require"] Literal';
+const PENDING_QUERY = 'CallExpression[callee.object.name="callback"] Identifier';
 
 // Utilities:
 import _ from 'lodash';
@@ -14,7 +15,15 @@ import JavaScriptFile from './JavaScriptFile';
 export default class StepDefinitionFile extends JavaScriptFile {
     read () {
         return super.read()
-        .then(() => getFileReferences.call(this));
+        .then(() => getFileReferences.call(this))
+        .then(() => {
+            let pendingIdentifiers = esquery(this.ast, PENDING_QUERY);
+            _.each(pendingIdentifiers, (pendingIdentifier) => {
+                   if (pendingIdentifier.name === 'pending'){
+                         this.isPending = true;
+                   }
+              });
+        });
     }
 
     save (data) {
@@ -23,13 +32,13 @@ export default class StepDefinitionFile extends JavaScriptFile {
     }
 }
 
-function getFileReferences () {
+function getFileReferences () {  
     let { references } = this.directory.fileStructure;
 
-    _.each(references, (referencePaths) => {
+    _.each(references, (referencePaths) => {       
         _.remove(referencePaths, (referencePath) => referencePath === this.path);
     });
-
+     
     let requirePaths = esquery(this.ast, REQUIRE_QUERY);
     _.each(requirePaths, (requirePath) => {
         let directoryPath = path.dirname(this.path);
