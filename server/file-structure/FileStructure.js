@@ -55,6 +55,11 @@ export default class FileStructure {
 
         let availableComponents;
         let availableMockData;
+        let availableStepDefinitions;
+
+        if (type === constants.FEATURES) {
+            availableStepDefinitions = getFilesOfType.call(this, StepDefinitionFile);
+        }
         if (type === constants.STEP_DEFINITIONS) {
             availableComponents = getFilesOfType.call(this, ComponentFile);
             availableMockData = getFilesOfType.call(this, MockDataFile);
