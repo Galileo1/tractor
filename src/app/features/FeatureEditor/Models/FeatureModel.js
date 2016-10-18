@@ -25,7 +25,8 @@ var createFeatureModelConstructor = function (
                         return {
                             type: stepDefinition.name.substring(0, stepDefinition.name.indexOf(' ')),
                             name: stepDefinition.name.substring(stepDefinition.name.indexOf(' ') + 1),
-                            path: stepDefinition.path
+                            path: stepDefinition.path,
+                            isPending: stepDefinition.isPending
                         }
                     });
                 }
@@ -80,10 +81,25 @@ var createFeatureModelConstructor = function (
         return stepDefinition;
     };
 
+    // FeatureModel.prototype.checkIfStepIsPending = function (step) {  
+    //     _.each(this.availableStepDefinitions, function(stepDefinition){      
+    //         if (stepDefinition.name.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '')  ){      
+    //             if (stepDefinition.isPending) {
+    //                 console.log(stepDefinition.isPending,stepDefinition.name)
+    //                 return stepDefinition;           
+    //             }else {
+    //                 console.log(stepDefinition.name,"false")
+    //                 return false;
+    //             }
+    //         }
+    //        // return ((stepDefinition.isPending) ? stepDefinition.isPending : false);
+    //     });        
+    // };
+
     return FeatureModel;
 
     function toFeatureString () {
-        var feature = 'Feature: ' + this.name;
+        var feature = 'Feature: ' + this.name;``
 
         var inOrderTo = FeatureIndent + 'In order to ' + this.inOrderTo;
         var asA = FeatureIndent + 'As a ' + this.asA;

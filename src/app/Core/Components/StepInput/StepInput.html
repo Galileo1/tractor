@@ -2,6 +2,7 @@
 <input name="step-{{ id }}" type="text" placeholder="e.g. {{ example }}"
     ng-model="model[property]"
     ng-model-options="{ allowInvalid: true }"
+    ng-readonly="pending"
     example-name
     required />
 <div ng-messages="form['step-' + id].$error">

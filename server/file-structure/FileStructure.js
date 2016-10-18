@@ -44,14 +44,9 @@ export default class FileStructure {
         });
     }
 
-    getStructure (type) {
-        let directory = this.structure.getDirectory(type);
+    getStructure (type) { 
+        let directory = this.structure.getDirectory(type);         
         let references = this.references;
-
-        let availableStepDefinitions;
-         if (type === constants.FEATURES) {
-            availableStepDefinitions = getFilesOfType.call(this, StepDefinitionFile);
-         }
 
         let availableComponents;
         let availableMockData;

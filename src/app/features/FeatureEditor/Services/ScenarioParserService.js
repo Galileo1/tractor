@@ -30,7 +30,7 @@ var ScenarioParserService = function ScenarioParserService (
             var notStep = false;
 
             try {
-                var parsedStepDeclaration = StepDeclarationParserService.parse(stepDeclaration);
+                var parsedStepDeclaration = StepDeclarationParserService.parse(feature, stepDeclaration);
                 assert(parsedStepDeclaration);
                 scenario.stepDeclarations.push(parsedStepDeclaration);
             } catch (e) {

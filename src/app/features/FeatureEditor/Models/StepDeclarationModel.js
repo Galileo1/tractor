@@ -18,6 +18,7 @@ var createStepDeclarationModelConstructor = function () {
 
         this.type = _.first(this.types);
         this.step = '';
+        this.isPending = '';
     };
 
     StepDeclarationModel.prototype.types = ['Given', 'When', 'Then', 'And', 'But'];

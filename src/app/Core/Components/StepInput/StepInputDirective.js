@@ -16,6 +16,7 @@ var StepInputDirective = function () {
         restrict: 'E',
 
         scope: {
+            pending : '=',
             model: '=',
             label: '@',
             example: '@'
@@ -33,6 +34,10 @@ var StepInputDirective = function () {
             throw new Error('The "tractor-step-input" directive requires a "model" attribute.');
         }
 
+        if (_.isUndefined($scope.pending)) {
+            throw new Error('The "tractor-step-input" directive requires a "pending" attribute.');
+        }
+
         if (_.isUndefined($scope.label)) {
             throw new Error('The "tractor-step-input" directive requires a "label" attribute.');
         }
@@ -41,6 +46,7 @@ var StepInputDirective = function () {
             throw new Error('The "tractor-step-input" directive requires a "form" attribute.');
         }
 
+        console.log($scope.pending);
         $scope.form = $scope.$parent[$attrs.form];
         $scope.id = Math.floor(Math.random() * Date.now());
 
