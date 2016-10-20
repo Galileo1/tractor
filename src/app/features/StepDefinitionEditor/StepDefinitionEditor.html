@@ -114,7 +114,7 @@
                 <h2>Active components:</h2>
                 <ul>
                     <li ng-repeat="component in stepDefinitionEditor.fileModel.componentInstances">                        
-                        <span ui-sref="tractor.components({file: {name: component.component.name, path: component.component.path}})" title="Edit the Component"> {{ component.component.name }} </span>
+                        <span title="{{ component.component.meta }}" ui-sref="tractor.components({file: {name: component.component.name, path: component.component.path}})" title="Edit the Component"> {{ component.component.name }} </span>
                         <tractor-action
                             model="stepDefinitionEditor.fileModel"
                             action="Remove component"
