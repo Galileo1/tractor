@@ -19,8 +19,7 @@ var createFeatureModelConstructor = function (
 
         Object.defineProperties(this, {
             availableStepDefinitions: {
-                get: function () {
-                    //return options.availableStepDefinitions;
+                get: function () {                    
                     return _.map(options.availableStepDefinitions, function(stepDefinition) {
                         return {
                             type: stepDefinition.name.substring(0, stepDefinition.name.indexOf(' ')),
@@ -80,21 +79,6 @@ var createFeatureModelConstructor = function (
         });
         return stepDefinition;
     };
-
-    // FeatureModel.prototype.checkIfStepIsPending = function (step) {  
-    //     _.each(this.availableStepDefinitions, function(stepDefinition){      
-    //         if (stepDefinition.name.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '')  ){      
-    //             if (stepDefinition.isPending) {
-    //                 console.log(stepDefinition.isPending,stepDefinition.name)
-    //                 return stepDefinition;           
-    //             }else {
-    //                 console.log(stepDefinition.name,"false")
-    //                 return false;
-    //             }
-    //         }
-    //        // return ((stepDefinition.isPending) ? stepDefinition.isPending : false);
-    //     });        
-    // };
 
     return FeatureModel;
 
