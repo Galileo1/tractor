@@ -22,10 +22,9 @@ var ScenarioParserService = function ScenarioParserService (
     };
 
     function parse (feature, tokens) {
-        var scenario = new ScenarioModel();
-         console.log('here');
+        var scenario = new ScenarioModel();       
         scenario.name = tokens.name;
-        scenario.scenarioTag = tokens.scenarioTag;
+        scenario.scenarioTag = tokens.tag[0];
        
         _.each(tokens.stepDeclarations, function (stepDeclaration, index) {
             var notStep = false;

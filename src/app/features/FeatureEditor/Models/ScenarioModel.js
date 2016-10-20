@@ -14,14 +14,15 @@ var createScenarioModelConstructor = function (
     StepDeclarationModel,
     ExampleModel,
     FeatureIndent,
-    FeatureNewLine
+    FeatureNewLine,
+    config
 ) {
     var ScenarioModel = function ScenarioModel () {
         var stepDeclarations = [];
         var examples = [];
         var scenarioTag;
         
-        this.scenarioTags = this.scenarioTagss;
+        this.scenarioTags = config.scenarioTags;
 
         Object.defineProperties(this, {
             stepDeclarations: {
@@ -63,8 +64,6 @@ var createScenarioModelConstructor = function (
     ScenarioModel.prototype.addStepDeclaration = function () {
         this.stepDeclarations.push(new StepDeclarationModel());
     };
-
-    ScenarioModel.prototype.scenarioTagss = ['@Given', '@When', '@Then'];
 
     ScenarioModel.prototype.removeStepDeclaration = function (toRemove) {
         _.remove(this.stepDeclarations, function (stepDeclaration) {
@@ -124,7 +123,8 @@ FeatureEditor.factory('ScenarioModel', function (
     StepDeclarationModel,
     ExampleModel,
     FeatureIndent,
-    FeatureNewLine
+    FeatureNewLine,
+    config
 ) {
-  return createScenarioModelConstructor(StepDeclarationModel, ExampleModel, FeatureIndent, FeatureNewLine);
+  return createScenarioModelConstructor(StepDeclarationModel, ExampleModel, FeatureIndent, FeatureNewLine, config);
 });

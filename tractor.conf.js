@@ -18,6 +18,14 @@ module.exports = {
         'http://localhost:3000',
         'http://localhost:4000'
     ],
+    scenarioTags:[
+        '@smoke',
+        '@breakpoint'
+    ],
+    featureTags:[
+        '@featuresmoke',
+        '@featurebreakpoint'
+    ],
 	beforeProtractor: function () {
         var fileStructure = require('./server/file-structure');
 
