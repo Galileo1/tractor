@@ -3,6 +3,7 @@
 // Utilities:
 var _ = require('lodash');
 var Promise = require('bluebird');
+var stripcolorcodes = require('stripcolorcodes');
 
 var FileEditorController = (function () {
     var FileEditorController = function FileEditorController (
@@ -70,7 +71,28 @@ var FileEditorController = (function () {
                 return Promise.resolve();
             }
         }.bind(this))
-        .then(function () {
+        .then(function () {    
+            if (this.fileModel.hasOwnProperty('asA')) {
+                var self = this;              
+                var stepNameArray = getStepNameForFeature(this.fileModel.data);
+                var existingStepDefs = getExistingStepDefinitions(this.availableStepDefinitions);              
+                _.each(stepNameArray, function(steps){
+                    _.find(existingStepDefs, function (stepDefs){
+                        if (stepDefs.name === steps.name && stepDefs.type != steps.type) {
+                            self.notifierService.error('Step Name ' + steps.name + ' exists with ' + stepDefs.type);
+                            throw new Error("Sorry, Not saving file");                      
+                            // return Promise.reject('Not Saving File.')
+                            //       .then(function(error) {
+                            //             console.log('not called');
+                            //         }, function(error) {
+                            //             console.log(error); // Stacktrace
+                            //         });
+                        }
+                    })
+                })       
+            }          
+        }.bind(this))
+        .then(function () {            
             return this.fileService.saveFile({
                 data: this.fileModel.data,
                 path: path
@@ -127,6 +149,59 @@ var FileEditorController = (function () {
         }
         return referencesInstances;
     }
+
+    function getStepNameForFeature(featureFile){   
+        var stepNameArray = [];
+        var stepNames = extractSteps(featureFile);       
+        _.each (stepNames, function (stepName){
+            var stepNameStruct = {
+                name : stepName.substr(stepName.indexOf(" ") + 1),
+                type : _.first( stepName.split(" ") )
+            }
+             stepNameArray.push(stepNameStruct)
+        });
+        return stepNameArray;        
+    }   
+    
+    function extractSteps(featureFileContent) {
+        var GIVEN_WHEN_THEN_REGEX = /^(Given|When|Then)/;
+        var AND_BUT_REGEX = /^(And|But)/;       
+        var NEW_LINE_REGEX = /\r\n|\n/;
+                 
+        return stripcolorcodes(featureFileContent)
+        // Split on new-lines:
+        .split(NEW_LINE_REGEX)
+        // Remove whitespace:
+        .map(line => line.trim())
+        // Get out each step name:
+        .filter((line) => GIVEN_WHEN_THEN_REGEX.test(line) || AND_BUT_REGEX.test(line))
+        .map((stepName, index, stepNames) => {
+            if (AND_BUT_REGEX.test(stepName)) {
+                let previousType = _(stepNames)
+                .take(index + 1)
+                .reduceRight((p, n) => {
+                    let type = n.match(GIVEN_WHEN_THEN_REGEX);
+                    return p || _.last(type);
+                }, null);
+                return stepName.replace(AND_BUT_REGEX, previousType);
+            } else {
+                return stepName;
+            }
+        });
+       
+    }
+
+    function getExistingStepDefinitions(availableStepDefinitions){
+        var stepDefinitionsArray = [];     
+        _.each(availableStepDefinitions, function(stepDefs){
+            var StepDefinitionStruct = {
+                    name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
+                    type : _.first( stepDefs.name.split(" ") )
+                };
+            stepDefinitionsArray.push(StepDefinitionStruct)
+         });
+        return stepDefinitionsArray;  
+    } 
 
     return FileEditorController;
 })();
