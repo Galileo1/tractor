@@ -22,6 +22,18 @@ var createFeatureModelConstructor = function (
         this.featureTags = config.featureTags;
 
         Object.defineProperties(this, {
+            availableStepDefinitions: {
+                get: function () {                   
+                    return _.map(options.availableStepDefinitions, function(stepDefinition) {
+                        return {
+                            type: stepDefinition.name.substring(0, stepDefinition.name.indexOf(' ')),
+                            name: stepDefinition.name.substring(stepDefinition.name.indexOf(' ') + 1),
+                            path: stepDefinition.path,
+                            pending: stepDefinition.isPending
+                        }
+                    });
+                }
+            },
             isSaved: {
                 get: function () {
                     return !!(options && options.isSaved);
@@ -73,6 +85,13 @@ var createFeatureModelConstructor = function (
         _.remove(this.scenarios, function (scenario) {
             return scenario === toRemove;
         });
+    };
+
+    FeatureModel.prototype.findStep = function (step) {
+        var stepDefinition = _.find(this.availableStepDefinitions, function(stepDefinition){
+            return stepDefinition.name.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '');
+        });
+        return stepDefinition;
     };
 
     return FeatureModel;
