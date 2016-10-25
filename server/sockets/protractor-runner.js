@@ -62,6 +62,9 @@ function startProtractor (socket, runOptions) {
         return deferred;
     }
 
+    console.log('scenarioTag: ', runOptions.scenarioTag);
+    console.log('featureTag: ', runOptions.featureTag);
+
     if (runOptions.hasOwnProperty("feature")) {
         featureToRun = join('/features', '/**/', `${runOptions.feature}.feature`);
     } else {
@@ -71,7 +74,19 @@ function startProtractor (socket, runOptions) {
 
     let specs = join(config.testDirectory, featureToRun);
 
-    let protractor = spawn('node', [PROTRACTOR_PATH, E2E_PATH, '--baseUrl', runOptions.baseUrl, '--specs', specs, '--params.debug', runOptions.debug]);
+    //deal with the cucumber tags
+    let tag;
+    if (runOptions.featureTag && runOptions.scenarioTag){
+        tag = join('--cucumberOpts.tags=',runOptions.featureTag,' ','--cucumberOpts.tags=',runOptions.scenarioTag);
+    } else if (runOptions.featureTag){
+        tag = '--cucumberOpts.tags=' + runOptions.featureTag;
+    } else if (runOptions.scenarioTag) {
+        tag = '--cucumberOpts.tags=' + runOptions.scenarioTag;
+    }
+
+    console.log("tag : ", tag);
+
+    let protractor = spawn('node', [PROTRACTOR_PATH, E2E_PATH, '--baseUrl', runOptions.baseUrl, '--specs', specs, '--params.debug', runOptions.debug, tag]);
 
     protractor.stdout.on('data', sendDataToClient.bind(socket));
     protractor.stderr.on('data', sendErrorToClient.bind(socket));

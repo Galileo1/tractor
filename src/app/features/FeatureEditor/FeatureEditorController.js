@@ -23,7 +23,8 @@ var FeatureEditorController = function FeatureEditorController (
     FeatureModel,
     featureFileStructure,
     featurePath,
-    runnerService
+    runnerService,
+    config
 ) {
     var controller = new FileEditorController(
         $scope,
@@ -37,6 +38,18 @@ var FeatureEditorController = function FeatureEditorController (
         featureFileStructure,
         featurePath
     );
+
+    controller.scenarioTags = config.scenarioTags;
+    var scenarioTag;
+    Object.defineProperty(controller, 'scenarioTag', {
+            get: function () {
+                return scenarioTag;
+            },
+            set: function (newTag) {
+                scenarioTag = newTag;
+                runnerService.scenarioTag = scenarioTag;
+            }
+    });
 
     this.runnerService = runnerService;
     controller.debug = false;

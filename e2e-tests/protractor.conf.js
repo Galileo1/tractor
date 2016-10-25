@@ -8,8 +8,9 @@ exports.config = {
     cucumberOpts: {
         require: [
             'support/**/*.js',
-            'step-definitions/**/*.js'
+            'step-definitions/**/*.js'          
         ],
+        tags: false,
         format: 'pretty'
     }
 };

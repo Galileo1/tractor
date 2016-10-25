@@ -19,6 +19,11 @@
                 <tractor-confirm-dialog trigger="featureEditor.confirmOverWrite">
                     <p>This will overwrite "{{ featureEditor.fileModel.name }}". Continue?</p>
                 </tractor-confirm-dialog>
+                <tractor-select ng-show="featureEditor.fileModel.name"
+                    class="file-options__save-file"
+                    label="scenarioTag"
+                    model="featureEditor">
+                </tractor-select>
                 <tractor-checkbox ng-show="featureEditor.fileModel.name"
                      class="file-options__save-file"
                      label="debug"

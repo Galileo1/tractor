@@ -11,6 +11,8 @@ var RunnerService = function RunnerService (
     realTimeService
 ) {
     this.baseUrl = null;
+    this.scenarioTag = null;
+    this.featureTag = null;
 
     return {
         runProtractor: runProtractor
@@ -20,6 +22,8 @@ var RunnerService = function RunnerService (
     function runProtractor (options) {
         options = options || {};
         options.baseUrl = this.baseUrl;
+        options.scenarioTag = this.scenarioTag;
+        options.featureTag = this.featureTag;
         var connection = realTimeService.connect('run-protractor', {
             'protractor-out': notify,
             'protractor-err': notify

@@ -20,17 +20,39 @@ var ControlPanelController = (function () {
         this.serverStatusService = serverStatusService;
 
         this.environments = config.environments;
+        this.featureTags  = config.featureTags;
 
         var environment;
-        Object.defineProperty(this, 'environment', {
-            get: function () {
-                return environment;
+        var featureTag;
+         Object.defineProperties(this, {
+            environment: {
+                get: function () {
+                    return environment;
+                },
+                set: function (newEnv) {
+                    environment = newEnv;
+                    runnerService.baseUrl = environment;
+                }
             },
-            set: function (newEnv) {
-                environment = newEnv;
-                runnerService.baseUrl = environment;
+            featureTag: {
+                get: function () {
+                    return featureTag;
+                },
+                set: function (newTag) {
+                    featureTag = newTag;
+                    runnerService.featureTag = featureTag;
+                }
             }
-        });
+         });
+        // Object.defineProperty(this, 'environment', {
+        //     get: function () {
+        //         return environment;
+        //     },
+        //     set: function (newEnv) {
+        //         environment = newEnv;
+        //         runnerService.baseUrl = environment;
+        //     }
+        // });       
         this.environment = _.first(this.environments);
     }
 
