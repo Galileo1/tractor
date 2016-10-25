@@ -42,13 +42,13 @@ var FeatureEditorController = function FeatureEditorController (
     controller.scenarioTags = config.scenarioTags;
     var scenarioTag;
     Object.defineProperty(controller, 'scenarioTag', {
-            get: function () {
-                return scenarioTag;
-            },
-            set: function (newTag) {
-                scenarioTag = newTag;
-                runnerService.scenarioTag = scenarioTag;
-            }
+        get: function () {
+            return scenarioTag;
+        },
+        set: function (newTag) {
+            scenarioTag = newTag;
+            runnerService.scenarioTag = scenarioTag;
+        }
     });
 
     this.runnerService = runnerService;
