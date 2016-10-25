@@ -73,23 +73,25 @@ var FileEditorController = (function () {
         }.bind(this))
         .then(function () {    
             if (this.fileModel.hasOwnProperty('asA')) {
-                var self = this;              
-                var stepNameArray = getStepNameForFeature(this.fileModel.data);
-                var existingStepDefs = getExistingStepDefinitions(this.availableStepDefinitions);              
-                _.each(stepNameArray, function(steps){
-                    _.find(existingStepDefs, function (stepDefs){
-                        if (stepDefs.name === steps.name && stepDefs.type != steps.type) {
-                            self.notifierService.error('Step Name ' + steps.name + ' exists with ' + stepDefs.type);
-                            throw new Error("Sorry, Not saving file");                      
-                            // return Promise.reject('Not Saving File.')
-                            //       .then(function(error) {
-                            //             console.log('not called');
-                            //         }, function(error) {
-                            //             console.log(error); // Stacktrace
-                            //         });
-                        }
-                    })
-                })       
+                var self = this;        
+                compareAndReject(self,this.fileModel.data, this.availableStepDefinitions)
+                      
+                // var stepNameArray = getStepNameForFeature(this.fileModel.data);
+                // var existingStepDefs = getExistingStepDefinitions(this.availableStepDefinitions);              
+                // _.each(stepNameArray, function(steps){
+                //     _.find(existingStepDefs, function (stepDefs){
+                //         if (stepDefs.name === steps.name && stepDefs.type != steps.type) {
+                //             self.notifierService.error('Step Name ' + steps.name + ' exists with ' + stepDefs.type);
+                //             throw "Sorry, Not saving file";                      
+                //             // return Promise.reject('Not Saving File.')
+                //             //       .then(function(error) {
+                //             //             console.log('not called');
+                //             //         }, function(error) {
+                //             //             console.log(error); // Stacktrace
+                //             //         });
+                //         }
+                //     })
+                // })       
             }          
         }.bind(this))
         .then(function () {            
@@ -141,13 +143,33 @@ var FileEditorController = (function () {
         if (references[filePath]) {
             _.each(references[filePath], function(referencePath){
                 var referenceModel = {
-                    name : referencePath.substring(referencePath.lastIndexOf('\\') + 1,referencePath.indexOf('.')),
+                    name : _.first( referencePath.substring(referencePath.lastIndexOf('\\') + 1,referencePath.lastIndexOf('.')).split(".") ),
                     path : referencePath
                 };
                 referencesInstances.push(referenceModel);
             });
         }
         return referencesInstances;
+    }
+
+    function compareAndReject(self, featureData, availableStepDefinitions) { 
+        console.log(self)
+        //var self = this;                     
+        var stepNameArray = getStepNameForFeature(featureData);
+        var existingStepDefs = getExistingStepDefinitions(availableStepDefinitions);  
+        console.log(stepNameArray);
+        console.log(existingStepDefs);
+        return _.each(stepNameArray, function(steps){
+                    _.find(existingStepDefs, function (stepDefs){
+                     if (stepDefs.name === steps.name && stepDefs.type != steps.type) {
+                        console.log("inside")
+                        self.notifierService.error('Step Name ' + steps.name + ' exists with ' + stepDefs.type);
+                   //throw "Sorry, Not saving file";                      
+                    return Promise.reject('Not Saving File.');
+
+           }
+    })
+        })
     }
 
     function getStepNameForFeature(featureFile){   
