@@ -77,11 +77,13 @@ function startProtractor (socket, runOptions) {
     //deal with the cucumber tags
     let tag;
     if (runOptions.featureTag && runOptions.scenarioTag){
-        tag = join('--cucumberOpts.tags=',runOptions.featureTag,' ','--cucumberOpts.tags=',runOptions.scenarioTag);
+        //tag = join('--cucumberOpts.tags=',runOptions.featureTag,' ','--cucumberOpts.tags=',runOptions.scenarioTag);
+        //tag = `--cucumberOpts.tags=\'${runOptions.featureTag}\'  --cucumberOpts.tags=\'${runOptions.scenarioTag}\'`
+        tag = `--cucumberOpts.tags=\'${runOptions.featureTag}\',\'${runOptions.scenarioTag}\'`
     } else if (runOptions.featureTag){
-        tag = '--cucumberOpts.tags=' + runOptions.featureTag;
+        tag = `--cucumberOpts.tags=${runOptions.featureTag}`
     } else if (runOptions.scenarioTag) {
-        tag = '--cucumberOpts.tags=' + runOptions.scenarioTag;
+        tag = `--cucumberOpts.tags=${runOptions.scenarioTag}`
     }
 
     console.log("tag : ", tag);
