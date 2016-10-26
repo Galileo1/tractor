@@ -74,34 +74,11 @@ var FileEditorController = (function () {
                 return Promise.resolve();
             }
         }.bind(this))
-        .then(function () {
-            var self = this;
-            var a;
-            var b;
-            if (this.fileModel.hasOwnProperty('asA')) {
-                // getStepNamesStepDefs(this)
-                // .then(function (data){
-                //     console.log('data',data)
-                //     checkIfStepExists(data)
-                // })
-                // return getStepNameForFeature(self)
-                // .then(getExistingStepDefinitions.bind(self))
-                // .then(checkIfStepExists.bind(self))
-                // this.stepNameArray = getStepNameForFeature(this.fileModel.data);
-                // this.stepDefinitionsArray = getExistingStepDefinitions(this.availableStepDefinitions);
-                // checkIfStepExists(this)
-               return getStepNameForFeature(self)
-               .then (function (_resultA){
-                   a = _resultA;
-                   var self = self;
-                   return getExistingStepDefinitions(self);
-               }).then (function (_resultB){
-                   console.log(a,_resultB)
-               })            
-               
-              
-                 
-
+        .then(function () {           
+            if (this.fileModel.hasOwnProperty('asA')) {              
+               return getStepNameForFeature(this)
+               .then(getExistingStepDefinitions.bind(this))
+               .then(checkIfStepExists.bind(this))            
             } else {
                 Promise.resolve();
             }          
@@ -165,37 +142,18 @@ var FileEditorController = (function () {
     }
 
     function getStepNameForFeature(self) {
-        console.log("this: ",self.fileModel)     
+        console.log("this: ",self)     
         return new Promise(function (resolve, reject) {
-            var stepNames = extractSteps(self.fileModel.data);
-            resolve(
+            var stepNames = extractSteps(self.fileModel.data);           
             _.each (stepNames, function (stepName){
                 var stepNameStruct = {
                     name : stepName.substr(stepName.indexOf(" ") + 1),
                     type : _.first( stepName.split(" ") )
                 }
-                self.stepNameArray.push(stepNameStruct);
-             })
-           )       
+                resolve(self.stepNameArray.push(stepNameStruct));
+             });                  
         });      
     }
-
-    // function getStepNameForFeature(featureContent) {
-    //     console.log("this: ",featureContent)
-    //     var  stepNameArray = []
-       
-    //         var stepNames = extractSteps(featureContent);
-         
-    //         _.each (stepNames, function (stepName){
-    //             var stepNameStruct = {
-    //                 name : stepName.substr(stepName.indexOf(" ") + 1),
-    //                 type : _.first( stepName.split(" ") )
-    //             }
-    //            stepNameArray.push(stepNameStruct);
-    //          })
-               
-    //      return stepNameArray;
-    // }
     
     function extractSteps(featureFileContent) {
         var GIVEN_WHEN_THEN_REGEX = /^(Given|When|Then)/;
@@ -224,87 +182,40 @@ var FileEditorController = (function () {
         });       
     }
 
-    function getExistingStepDefinitions(self){
-       console.log("existing: ",self)       
-       return new Promise(function (resolve, reject){
-            resolve (
-                 _.each(self.availableStepDefinitions, function(stepDefs){
-                  var StepDefinitionStruct = {
-                      name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
-                      type : _.first( stepDefs.name.split(" ") )
-                  };
-                self.stepDefinitionsArray.push(StepDefinitionStruct)
-             })
-            )
-       })         
-        
+    function getExistingStepDefinitions(){
+       console.log("existing: ",this) 
+       var self = this      
+       return new Promise(function (resolve, reject){ 
+           _.each(self.availableStepDefinitions, function(stepDefs){
+               var StepDefinitionStruct = {
+                   name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
+                   type : _.first( stepDefs.name.split(" ") )
+               };
+               resolve (self.stepDefinitionsArray.push(StepDefinitionStruct));
+             });            
+       });        
     }
 
-    // function getExistingStepDefinitions(availableStepDefs){
-    //    console.log("existing: ",availableStepDefs) 
-    //    var  stepDefinitionsArray = [];     
-     
-    //              _.each(availableStepDefs, function(stepDefs){
-    //               var StepDefinitionStruct = {
-    //                   name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
-    //                   type : _.first( stepDefs.name.split(" ") )
-    //               };
-    //             stepDefinitionsArray.push(StepDefinitionStruct)
-    //          })
-    //         return stepDefinitionsArray;
-              
-        
-    // } 
-
-
-
-    function checkIfStepExists(self, stepNameArray, existingStepDefs){
-        console.log("sdjkfhksf", stepNameArray)
-        console.log("sdjkfhksf", existingStepDefs)
-        console.log("self:", self)
+    function checkIfStepExists(){            
+        var self = this;       
+        console.log("self:", self) 
+        console.log(self.stepNameArray)
+        console.log(self.stepDefinitionsArray)
         return new Promise(function (resolve, reject) {          
-            _.each(stepNameArray, function(steps) {
-                _.find(existingStepDefs, function (stepDefs) {                        
+            _.each(self.stepNameArray, function(steps) {
+                _.find(self.stepDefinitionsArray, function (stepDefs) {                        
                     if (stepDefs.name === steps.name && stepDefs.type !== steps.type) {
-                        console.log("rejected");
-                        self.notifierService.error("Not Saving.StepName: "+ steps.name + " exists with: " + stepDefs.type);
-                        reject(Error("Not Saving."));
-                    } else {                        
-                        resolve();
-                    }
+                        console.log("rejected");                        
+                        self.notifierService.error("Not Saving.StepName : "+ steps.name + " exists with: " + stepDefs.type);
+                        reject("Not Saving.");
+                        return;
+                     }
+                     resolve();
                 });
             });
         });
      }
-    
-    // function getStepNamesStepDefs (self) {
-    //     return new Promise(function (resolve, reject) {    
-    //         var stepNames = extractSteps(self.fileModel.data);
-    //         _.each (stepNames, function (stepName) {
-    //               var stepNameStruct = {
-    //                     name : stepName.substr(stepName.indexOf(" ") + 1),
-    //                     type : _.first( stepName.split(" ") )
-    //                 }
-    //                self.stepNameArray.push(stepNameStruct);
-    //             }),
-
-    //           _.each(self.availableStepDefinitions, function(stepDefs){
-    //                 var StepDefinitionStruct = {
-    //                     name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
-    //                     type : _.first( stepDefs.name.split(" ") )
-    //                 };
-    //                 self.stepDefinitionsArray.push(StepDefinitionStruct);
-    //             })
-
-    //          resolve (self.stepNameArray);
-    //          resolve(self.stepDefinitionsArray);
-            
-    //     }); 
-
-
-
-
-    //}
+ 
     return FileEditorController;
 })();
 
