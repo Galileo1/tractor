@@ -101,7 +101,7 @@ var FileEditorController = (function () {
             }.bind(this));
         }.bind(this))
         .catch(function (error) {
-            this.notifierService.error('File was not saved.'+ error);
+            this.notifierService.error('File was not saved.');
         }.bind(this));
     };
 
@@ -141,23 +141,23 @@ var FileEditorController = (function () {
         return referencesInstances;
     }
 
-    function getStepNameForFeature(self) {
-        console.log("this: ",self)     
+    function getStepNameForFeature(self) { 
+        self.stepNameArray = [];
         return new Promise(function (resolve, reject) {
-            var stepNames = extractSteps(self.fileModel.data);           
-            _.each (stepNames, function (stepName){
+            var stepNames = extractSteps(self.fileModel.data);
+            _.each (stepNames, function (stepName) {
                 var stepNameStruct = {
                     name : stepName.substr(stepName.indexOf(" ") + 1),
                     type : _.first( stepName.split(" ") )
                 }
                 resolve(self.stepNameArray.push(stepNameStruct));
-             });                  
-        });      
+             });
+        });
     }
     
     function extractSteps(featureFileContent) {
         var GIVEN_WHEN_THEN_REGEX = /^(Given|When|Then)/;
-        var AND_BUT_REGEX = /^(And|But)/;       
+        var AND_BUT_REGEX = /^(And|But)/;
         var NEW_LINE_REGEX = /\r\n|\n/;
                  
         return stripcolorcodes(featureFileContent)
@@ -179,43 +179,43 @@ var FileEditorController = (function () {
             } else {
                 return stepName;
             }
-        });       
+        });
     }
 
-    function getExistingStepDefinitions(){
-       console.log("existing: ",this) 
-       var self = this      
-       return new Promise(function (resolve, reject){ 
-           _.each(self.availableStepDefinitions, function(stepDefs){
+    function getExistingStepDefinitions() {      
+       var self = this;
+       self.stepDefinitionsArray = [];
+       return new Promise(function (resolve, reject) {
+           _.each(self.availableStepDefinitions, function(stepDefs) {
                var StepDefinitionStruct = {
                    name : stepDefs.name.substr(stepDefs.name.indexOf(" ") + 1),
                    type : _.first( stepDefs.name.split(" ") )
                };
                resolve (self.stepDefinitionsArray.push(StepDefinitionStruct));
-             });            
-       });        
+             });
+       });
     }
 
-    function checkIfStepExists(){            
-        var self = this;       
-        console.log("self:", self) 
-        console.log(self.stepNameArray)
-        console.log(self.stepDefinitionsArray)
-        return new Promise(function (resolve, reject) {          
+    function checkIfStepExists() {
+        var self = this;
+        var promiseStatus = false;
+        return new Promise(function (resolve, reject) {
             _.each(self.stepNameArray, function(steps) {
-                _.find(self.stepDefinitionsArray, function (stepDefs) {                        
-                    if (stepDefs.name === steps.name && stepDefs.type !== steps.type) {
-                        console.log("rejected");                        
-                        self.notifierService.error("Not Saving.StepName : "+ steps.name + " exists with: " + stepDefs.type);
-                        reject("Not Saving.");
-                        return;
+                _.find(self.stepDefinitionsArray, function (stepDefs) {
+                    if (stepDefs.name === steps.name && stepDefs.type !== steps.type) {                       
+                        promiseStatus = true;
+                        self.notifierService.error('Can\'t Save : ' + stepDefs.type + ' as ' + steps.type + ' for StepName :' + steps.name);
                      }
-                     resolve();
                 });
             });
+            if (promiseStatus) {
+                return reject(Error("Not Saving File"));
+            } else {
+                return resolve();
+            }            
         });
      }
- 
+
     return FileEditorController;
 })();
 
