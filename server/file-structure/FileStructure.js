@@ -116,11 +116,13 @@ export default class FileStructure {
     }
 
     saveFile (type, data, path) {
+        console.log("save file in filestructure; ", type)
         let toSave = this.allFilesByPath[path];
         if (!toSave) {
             let directory = this.structure.getDirectory(type);
             toSave = new files[type](path, directory);
         }
+        console.log("save file in ffdgdsgfsdgfsdilestructure; ")
         return toSave.save(data);
     }
 
