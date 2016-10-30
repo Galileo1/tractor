@@ -5,7 +5,9 @@ import constants from '../constants';
 const REQUIRE_QUERY = 'CallExpression[callee.name="require"] Literal';
 //const VARIABLE_QUERY = 'AssignmentExpression[left.object.property.name="prototype"] Identifier';
 const VARIABLE_QUERY = 'AssignmentExpression > .left[object.property.name="prototype"] .property[name!="prototype"]';
+const FUNCTION_QUERY ='CallExpression > .callee[object.name="tractor"] .property[name]'
 import fileStructure from '../file-structure';
+import StepDefinitionFile from './StepDefinitionFile';
 
 // Utilities:
 import _ from 'lodash';
@@ -57,21 +59,46 @@ function getStepDefiFileReferences () {
 }
 
  function getVariableName(self) {    
-     let actionNames = esquery(self.ast, VARIABLE_QUERY); 
-     console.log('req path:', actionNames);
-     console.log('name:', self.name);
-     console.log('path:', self.path);
-     let { references } = self.directory.fileStructure;
-     let existingFileNames = _(references)
-     .filter(file => file.path.match(new RegExp(constants.EXTENSIONS['step-definitions'])))
-     .map(file => file)
-     .value();
+     let actionNames = esquery(self.ast, VARIABLE_QUERY);
+    //  console.log('req path:', actionNames);
+    //  console.log('name:', self.name);
+    //  console.log('path:', self.path);
+     let { references } = self.directory.fileStructure;  
+     let stepDefintions = references[self.path]
+                          .map(val => _.first( val.substring(val.lastIndexOf('\\') + 1,val.lastIndexOf('.')).split(".") ) )
+     console.log(stepDefintions);
+     let c =  _.filter(fileStructure.allFiles, file => file instanceof StepDefinitionFile)
+     .filter(file => stepDefintions.indexOf(file.name) >= 0)
+     .map(file => file.ast)
+     console.log(c);
+     let a = esquery(c, FUNCTION_QUERY);
+     console.log(a)
+     //console.log("ttttt: ",references[self.path])
+
+
+    //   _.each(references, (referencePaths) => {
+    //       console.log("referencePaths: ",referencePaths)
+    //       console.log("paths: ",self.path)
+    //       if (referencePaths === self.path){
+    //           console.log("klhjlkm")
+    //       }
+       
+         
+    // })
+    
+    //  let existingFileNames = _(references)
+    //  .filter(file => file.path.match(new RegExp(constants.EXTENSIONS['step-definitions'])))
+    //  .map(file => file)
+    //  .value();
 
     //  let existingFileNames = _(fileStructure.allFiles)
     // .filter(file => file.path.match(new RegExp(constants.EXTENSIONS['step-definitions'])))
-    // .map(file => file.path)
+    // .map(file => file)
     // .value();
-     console.log(existingFileNames);
+     //console.log(references);
+   
+    // console.log(c  )
+     
     //  _.each(actionNames, (actionName) {
 
     //  })
