@@ -74216,7 +74216,7 @@ var FileEditorController = (function () {
                 _.find(self.stepDefinitionsArray, function (stepDefs) {
                     if (stepDefs.name === steps.name && stepDefs.type !== steps.type) {                       
                         promiseStatus = true;
-                        self.notifierService.error('Can\'t Save : ' + stepDefs.type + ' as ' + steps.type + ' for StepName :' + steps.name);
+                        self.notifierService.error("'"+ stepDefs.type + ' ' + stepDefs.name+"'" + ' already exists.Can\'t save it as '+ steps.type);
                      }
                 });
             });
