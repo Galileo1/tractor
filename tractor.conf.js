@@ -19,15 +19,21 @@ module.exports = {
         'http://localhost:4000'
     ],
     scenarioTags:[
+        '',
         '@smoke',
         '@breakpoint',
+        '@ignore',
         '~@smoke',
         '~@breakpoint',
-        ''
+        '~@ignore'
     ],
     featureTags:[
+        '',
         '@featuresmoke',
         '@featurebreakpoint',
-        ''
+        '@featureignore',
+        '~@featuresmoke',
+        '~@featurebreakpoint',
+        '~@featureignore'
     ],
 };

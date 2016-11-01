@@ -24,7 +24,7 @@ var ControlPanelController = (function () {
 
         var environment;
         var featureTag;
-         Object.defineProperties(this, {
+        Object.defineProperties(this, {
             environment: {
                 get: function () {
                     return environment;
@@ -39,25 +39,20 @@ var ControlPanelController = (function () {
                     return featureTag;
                 },
                 set: function (newTag) {
-                    featureTag = newTag;
-                    runnerService.featureTag = featureTag;
+                    featureTag = newTag;                    
                 }
             }
          });
-        // Object.defineProperty(this, 'environment', {
-        //     get: function () {
-        //         return environment;
-        //     },
-        //     set: function (newEnv) {
-        //         environment = newEnv;
-        //         runnerService.baseUrl = environment;
-        //     }
-        // });       
+     
         this.environment = _.first(this.environments);
+        this.featureTag = _.first(this.featureTags);
     }
 
+
     ControlPanelController.prototype.runProtractor = function () {
-        this.runnerService.runProtractor();
+        this.runnerService.runProtractor({
+            featureTag: this.featureTag
+        });
     };
 
     ControlPanelController.prototype.isServerRunning = function () {

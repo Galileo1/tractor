@@ -1,5 +1,8 @@
 'use strict';
 
+//Utilities
+var _ = require('lodash');
+
 // Module:
 var FeatureEditor = require('./FeatureEditor');
 
@@ -51,6 +54,7 @@ var FeatureEditorController = function FeatureEditorController (
         }
     });
 
+    controller.scenarioTag = _.first(controller.scenarioTags);
     this.runnerService = runnerService;
     controller.debug = false;
     this.controller = controller;   

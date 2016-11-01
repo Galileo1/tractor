@@ -22,6 +22,10 @@ module.exports = function () {
         return callback(w);
     };
 
+
+    this.BeforeFeature("@featurebreakpoint", function (feature, callback) {
+        global.browser.driver.manage().window().setSize(500, 800);
+    })
     /* eslint-disable new-cap */
     this.Before(function (scenario, callback) {       
     /* eslint-enable new-cap */
@@ -39,7 +43,7 @@ module.exports = function () {
     });
 
     /* eslint-disable new-cap */
-    this.After(function (scenario, callback) {
+    this.After(function (scenario, callback) {  
     /* eslint-enable new-cap */
         global.httpBackend.clear();
         global.browser.manage().deleteAllCookies();

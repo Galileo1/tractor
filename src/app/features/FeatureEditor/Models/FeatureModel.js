@@ -19,7 +19,7 @@ var createFeatureModelConstructor = function (
         var scenarios = [];
         var featureTag;
         
-        this.featureTags = config.featureTags;
+        this.featureTags = config.featureTags.filter(function(item) { return item.indexOf('~') === -1 });
 
         Object.defineProperties(this, {
             availableStepDefinitions: {
@@ -74,7 +74,7 @@ var createFeatureModelConstructor = function (
         this.inOrderTo = '';
         this.asA = '';
         this.iWant = '';        
-        //this.featureTag = _.first(this.featureTags);
+        this.featureTag = _.first(this.featureTags);
     };
 
     FeatureModel.prototype.addScenario = function () {

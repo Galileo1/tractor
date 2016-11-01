@@ -22,7 +22,7 @@ var createScenarioModelConstructor = function (
         var examples = [];
         var scenarioTag;
         
-        this.scenarioTags = config.scenarioTags;
+        this.scenarioTags = config.scenarioTags.filter(function(item) { return item.indexOf('~') === -1 });
 
         Object.defineProperties(this, {
             stepDeclarations: {
@@ -57,7 +57,7 @@ var createScenarioModelConstructor = function (
         });
 
         this.name = '';
-        this.scenarioTag = _.first(this.scenarioTags);      
+        this.scenarioTag = _.first(this.scenarioTags);
 
     };
 
