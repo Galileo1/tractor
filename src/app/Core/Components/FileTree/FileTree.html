@@ -70,6 +70,9 @@
         <li class="file-tree__file-list-item"
             ng-repeat="item in (item || fileTree.model.fileStructure.directory).files"
             tractor-drag-file>
+            <input type="checkbox"
+              ng-checked="fileTree.selectedFeatures.indexOf(item.path) > -1"
+              ng-click="fileTree.toggleSelection(item.path)">
             <div ng-include="'file-options.html'"></div>
 
             <p class="file-tree__item-name file-tree__item-{{fileTree.getPending(item)}}"

@@ -11,6 +11,7 @@ var Core = require('../../Core');
 var camel = require('change-case').camel;
 var title = require('change-case').title;
 require('../../Services/FileStructureService');
+require('../../Services/RunnerService');
 
 var FileTreeController = (function () {
     var FileTreeController = function FileTreeController (
@@ -18,7 +19,8 @@ var FileTreeController = (function () {
         $interval,
         $window,
         notifierService,
-        fileStructureService
+        fileStructureService,
+        runnerService
     ) {
         this.$state = $state;
         this.$interval = $interval;
@@ -30,6 +32,23 @@ var FileTreeController = (function () {
         this.canModify = this.type !== 'step-definitions';
 
         this.editFilePath = this.editFilePath.bind(this);
+        this.runnerService = runnerService;
+        this.selectedFeatures = [];
+        // Object.defineProperty(this, 'selectedFeatures', {
+        //    get: function () {
+        //         return selectedFeatures;
+        //    },
+        //    set: function (newVal) {
+        //         var idx = selectedFeatures.indexOf(newVal);
+        //         if (idx > -1) {
+        //             selectedFeatures.splice(idx, 1);
+        //         } else {
+        //             console.log(newVal.substring(newVal.lastIndexOf('\\')+1))
+        //             selectedFeatures.push(newVal.substring(newVal.lastIndexOf('\\')+1));
+        //         }
+        //         this.runnerService.featureArray = selectedFeatures;
+        //    }
+        // });
     };
 
     FileTreeController.prototype.getName = function (item) {
@@ -43,6 +62,20 @@ var FileTreeController = (function () {
 
     FileTreeController.prototype.getPending = function (item) {
         return (item.isPending ? "isPending" : "none");
+    }
+
+    FileTreeController.prototype.toggleSelection = function (item) {
+        console.log(item);
+        //(this.selection.indexOf(item) > -1 ? this.selection.splice(idx, 1) )
+        var idx = this.selectedFeatures.indexOf(item);          
+        if (idx > -1) {
+            this.selectedFeatures.splice(idx, 1);
+        } else {
+            console.log(item.substring(item.lastIndexOf('\\')+1))
+            this.selectedFeatures.push(item.substring(item.lastIndexOf('\\')+1));
+        }        
+        console.log(this.selectedFeatures);
+        this.runnerService.featureArray = this.selectedFeatures;
     }
 
     FileTreeController.prototype.addDirectory = function (directory) {
