@@ -69691,6 +69691,7 @@ var Core = require('../../Core');
 var camel = require('change-case').camel;
 var title = require('change-case').title;
 require('../../Services/FileStructureService');
+require('../../Services/RunnerService');
 
 var FileTreeController = (function () {
     var FileTreeController = function FileTreeController (
@@ -69698,7 +69699,8 @@ var FileTreeController = (function () {
         $interval,
         $window,
         notifierService,
-        fileStructureService
+        fileStructureService,
+        runnerServices
     ) {
         this.$state = $state;
         this.$interval = $interval;
@@ -69710,8 +69712,11 @@ var FileTreeController = (function () {
         this.canModify = this.type !== 'step-definitions';
 
         this.editFilePath = this.editFilePath.bind(this);
+        this.runnerServices = runnerServices;
+        this.selectedFeatures = [];
+
     };
-    FileTreeController.$inject = ['$state', '$interval', '$window', 'notifierService', 'fileStructureService'];
+    FileTreeController.$inject = ['$state', '$interval', '$window', 'notifierService', 'fileStructureService', 'runnerServices'];
 
     FileTreeController.prototype.getName = function (item) {
         if (item.ast) {
@@ -69724,6 +69729,22 @@ var FileTreeController = (function () {
 
     FileTreeController.prototype.getPending = function (item) {
         return (item.isPending ? "isPending" : "none");
+    }
+
+    FileTreeController.prototype.toggleSelection = function (item) {
+        var featureName = item.substring(item.lastIndexOf('\\')+1);
+        console.log(featureName);
+        //(this.selection.indexOf(item) > -1 ? this.selection.splice(idx, 1) )
+        var idx = this.selectedFeatures.indexOf(featureName);         
+        if (idx > -1) {
+            console.log("splicing");
+            this.selectedFeatures.splice(idx, 1);
+        } else {
+            //console.log(item.substring(item.lastIndexOf('\\')+1))
+            this.selectedFeatures.push(featureName);
+        }        
+        console.log(this.selectedFeatures);
+        this.runnerServices.featureArray = this.selectedFeatures;
     }
 
     FileTreeController.prototype.addDirectory = function (directory) {
@@ -69880,7 +69901,7 @@ var FileTreeController = (function () {
 
 Core.controller('FileTreeController', FileTreeController);
 
-},{"../../Core":110,"../../Services/FileStructureService":114,"change-case":17,"lodash":51,"path":61}],98:[function(require,module,exports){
+},{"../../Core":110,"../../Services/FileStructureService":114,"../../Services/RunnerService":119,"change-case":17,"lodash":51,"path":61}],98:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -69903,7 +69924,7 @@ var FileTreeDirective = function () {
         },
 
         /* eslint-disable no-path-concat */
-        template: "<script type=\"text/ng-template\" id=\"file-options.html\">\r\n    <div class=\"file-tree__item-options\"\r\n         ng-class=\"{ 'file-tree__item-active-options': item.showOptions }\"\r\n         ng-click=\"fileTree.showOptions(item)\">\r\n    </div>\r\n    <div class=\"file-tree__item-options-panel\"\r\n         ng-if=\"item.showOptions\"\r\n         ng-mouseleave=\"fileTree.hideOptions(item)\">\r\n        <tractor-action\r\n            ng-if=\"fileTree.canModify\"\r\n            model=\"fileTree\"\r\n            action=\"Edit name\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n        <tractor-action\r\n            ng-if=\"fileTree.canModify && !item.isDirectory\"\r\n            model=\"fileTree\"\r\n            action=\"Copy\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n        <tractor-action\r\n            model=\"fileTree\"\r\n            action=\"Delete\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n    </div>\r\n</script>\r\n\r\n<script type=\"text/ng-template\" id=\"rename-input.html\">\r\n    <input class=\"file-tree__item-rename\"\r\n            ng-if=\"item.editingName\"\r\n            ng-model=\"item.name\"\r\n            ng-blur=\"fileTree.saveNewName(item)\"\r\n            ng-keypress=\"fileTree.renameOnEnter($event, item)\"\r\n            tractor-give-focus\r\n            focus-on=\"item.editingName\">\r\n    </input>\r\n</script>\r\n\r\n<script type=\"text/ng-template\" id=\"file-structure.html\">\r\n    <div ng-include=\"'file-options.html'\"></div>\r\n\r\n    <p class=\"file-tree__item-name\"\r\n        ng-if=\"item.name && !item.editingName\"\r\n        ng-click=\"fileTree.toggleOpenDirectory(item)\"\r\n        ng-dblclick=\"fileTree.editName(item)\">\r\n        {{ item.name }}\r\n    </p>\r\n    <div ng-include=\"'rename-input.html'\"></div>\r\n\r\n    <ul class=\"file-tree__file-list\"\r\n        ng-if=\"(item || fileTree.model.fileStructure.directory).open\">\r\n        <li class=\"file-tree__file-list-item file-tree__file-list-item--new-directory\">\r\n            <tractor-action\r\n                model=\"fileTree\"\r\n                action=\"Add directory\"\r\n                argument=\"item || fileTree.model.fileStructure.directory\">\r\n            </tractor-action>\r\n        </li>\r\n\r\n        <li class=\"file-tree__file-list-item file-tree__file-list-item--directory\"\r\n            ng-class=\"{ 'file-tree__file-list-item--open-directory': item.open }\"\r\n            ng-repeat=\"item in (item || fileTree.model.fileStructure.directory).directories\"\r\n            ng-include=\"'file-structure.html'\"\r\n            tractor-drop-file\r\n            on-drop=\"fileTree.editFilePath\"\r\n            drop-directory=\"item\">\r\n        </li>\r\n\r\n        <li class=\"file-tree__file-list-item\"\r\n            ng-repeat=\"item in (item || fileTree.model.fileStructure.directory).files\"\r\n            tractor-drag-file>\r\n            <div ng-include=\"'file-options.html'\"></div>\r\n\r\n            <p class=\"file-tree__item-name file-tree__item-{{fileTree.getPending(item)}}\"\r\n                ng-if=\"item.name && !item.editingName\"\r\n                ng-click=\"fileTree.openFile(item)\"\r\n                ng-dblclick=\"fileTree.editName(item)\">\r\n                {{ fileTree.getName(item) }}\r\n            </p>\r\n            <div ng-include=\"'rename-input.html'\"></div>\r\n        </li>\r\n    </ul>\r\n</script>\r\n\r\n<section class=\"file-tree__container\"\r\n    tractor-drop-file\r\n    on-drop=\"fileTree.editFilePath\"\r\n    drop-directory=\"fileTree.model.fileStructure.directory\">\r\n\r\n    <h2 class=\"file-tree__header\">\r\n        {{ fileTree.headerName }} files:\r\n    </h2>\r\n    <div class=\"file-tree\"\r\n        ng-class=\"{\r\n            'file-tree--javascript': fileTree.type === 'components' || fileTree.type === 'step-definitions',\r\n            'file-tree--feature': fileTree.type === 'features',\r\n            'file-tree--json': fileTree.type === 'mock-data'\r\n        }\"\r\n        ng-include=\"'file-structure.html'\">\r\n    </div>\r\n</section>\r\n",
+        template: "<script type=\"text/ng-template\" id=\"file-options.html\">\r\n    <div class=\"file-tree__item-options\"\r\n         ng-class=\"{ 'file-tree__item-active-options': item.showOptions }\"\r\n         ng-click=\"fileTree.showOptions(item)\">\r\n    </div>\r\n    <div class=\"file-tree__item-options-panel\"\r\n         ng-if=\"item.showOptions\"\r\n         ng-mouseleave=\"fileTree.hideOptions(item)\">\r\n        <tractor-action\r\n            ng-if=\"fileTree.canModify\"\r\n            model=\"fileTree\"\r\n            action=\"Edit name\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n        <tractor-action\r\n            ng-if=\"fileTree.canModify && !item.isDirectory\"\r\n            model=\"fileTree\"\r\n            action=\"Copy\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n        <tractor-action\r\n            model=\"fileTree\"\r\n            action=\"Delete\"\r\n            argument=\"item\">\r\n        </tractor-action>\r\n    </div>\r\n</script>\r\n\r\n<script type=\"text/ng-template\" id=\"rename-input.html\">\r\n    <input class=\"file-tree__item-rename\"\r\n            ng-if=\"item.editingName\"\r\n            ng-model=\"item.name\"\r\n            ng-blur=\"fileTree.saveNewName(item)\"\r\n            ng-keypress=\"fileTree.renameOnEnter($event, item)\"\r\n            tractor-give-focus\r\n            focus-on=\"item.editingName\">\r\n    </input>\r\n</script>\r\n\r\n<script type=\"text/ng-template\" id=\"file-structure.html\">\r\n    <div ng-include=\"'file-options.html'\"></div>\r\n\r\n    <p class=\"file-tree__item-name\"\r\n        ng-if=\"item.name && !item.editingName\"\r\n        ng-click=\"fileTree.toggleOpenDirectory(item)\"\r\n        ng-dblclick=\"fileTree.editName(item)\">\r\n        {{ item.name }}\r\n    </p>\r\n    <div ng-include=\"'rename-input.html'\"></div>\r\n\r\n    <ul class=\"file-tree__file-list\"\r\n        ng-if=\"(item || fileTree.model.fileStructure.directory).open\">\r\n        <li class=\"file-tree__file-list-item file-tree__file-list-item--new-directory\">\r\n            <tractor-action\r\n                model=\"fileTree\"\r\n                action=\"Add directory\"\r\n                argument=\"item || fileTree.model.fileStructure.directory\">\r\n            </tractor-action>\r\n        </li>\r\n\r\n        <li class=\"file-tree__file-list-item file-tree__file-list-item--directory\"\r\n            ng-class=\"{ 'file-tree__file-list-item--open-directory': item.open }\"\r\n            ng-repeat=\"item in (item || fileTree.model.fileStructure.directory).directories\"\r\n            ng-include=\"'file-structure.html'\"\r\n            tractor-drop-file\r\n            on-drop=\"fileTree.editFilePath\"\r\n            drop-directory=\"item\">\r\n        </li>\r\n\r\n        <li class=\"file-tree__file-list-item\"\r\n            ng-repeat=\"item in (item || fileTree.model.fileStructure.directory).files\"\r\n            tractor-drag-file>\r\n            <input type=\"checkbox\" ng-if=\"fileTree.type === 'features'\"\r\n              ng-checked=\"fileTree.selectedFeatures.indexOf(item.path) > -1\"\r\n              ng-click=\"fileTree.toggleSelection(item.path)\">\r\n            <div ng-include=\"'file-options.html'\"></div>\r\n\r\n            <p class=\"file-tree__item-name file-tree__item-{{fileTree.getPending(item)}}\"\r\n                ng-if=\"item.name && !item.editingName\"\r\n                ng-click=\"fileTree.openFile(item)\"\r\n                ng-dblclick=\"fileTree.editName(item)\">\r\n                {{ fileTree.getName(item) }}\r\n            </p>\r\n            <div ng-include=\"'rename-input.html'\"></div>\r\n        </li>\r\n    </ul>\r\n</script>\r\n\r\n<section class=\"file-tree__container\"\r\n    tractor-drop-file\r\n    on-drop=\"fileTree.editFilePath\"\r\n    drop-directory=\"fileTree.model.fileStructure.directory\">\r\n\r\n    <h2 class=\"file-tree__header\">\r\n        {{ fileTree.headerName }} files:\r\n    </h2>\r\n    <div class=\"file-tree\"\r\n        ng-class=\"{\r\n            'file-tree--javascript': fileTree.type === 'components' || fileTree.type === 'step-definitions',\r\n            'file-tree--feature': fileTree.type === 'features',\r\n            'file-tree--json': fileTree.type === 'mock-data'\r\n        }\"\r\n        ng-include=\"'file-structure.html'\">\r\n    </div>\r\n</section>\r\n",
         /* eslint-enable no-path-concat */
 
         controller: 'FileTreeController',
@@ -70416,7 +70437,7 @@ var StepInputDirective = function () {
 
 Core.directive('tractorStepInput', StepInputDirective);
 
-},{"../../Core":110,"../../Validators/ExampleNameValidator":121,"./StepInputController":105,"change-case":17,"lodash":51}],107:[function(require,module,exports){
+},{"../../Core":110,"../../Validators/ExampleNameValidator":122,"./StepInputController":105,"change-case":17,"lodash":51}],107:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -70557,7 +70578,7 @@ var VariableInputDirective = function () {
 
 Core.directive('tractorVariableInput', VariableInputDirective);
 
-},{"../../Core":110,"../../Validators/VariableNameValidator":123,"change-case":17,"lodash":51}],110:[function(require,module,exports){
+},{"../../Core":110,"../../Validators/VariableNameValidator":124,"change-case":17,"lodash":51}],110:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -70587,7 +70608,7 @@ require('./Validators/VariableNameValidator');
 require('./Validators/FileNameValidator');
 require('./Validators/ExampleNameValidator');
 
-},{"./Components/Action/ActionDirective":91,"./Components/Checkbox/CheckboxDirective":92,"./Components/ConfirmDialog/ConfirmDialogDirective":94,"./Components/DragFile/DragFileDirective":95,"./Components/DropFile/DropFileDirective":96,"./Components/FileTree/FileTreeDirective":98,"./Components/GiveFocus/GiveFocusDirective":99,"./Components/LiteralInput/LiteralInputDirective":100,"./Components/Notifier/NotifierDirective":101,"./Components/PanelHandle/PanelHandleDirective":103,"./Components/SelectInput/SelectInputDirective":104,"./Components/StepInput/StepInputDirective":106,"./Components/Submit/SubmitDirective":107,"./Components/TextInput/TextInputDirective":108,"./Components/VariableInput/VariableInputDirective":109,"./Validators/ExampleNameValidator":121,"./Validators/FileNameValidator":122,"./Validators/VariableNameValidator":123,"angular":9}],111:[function(require,module,exports){
+},{"./Components/Action/ActionDirective":91,"./Components/Checkbox/CheckboxDirective":92,"./Components/ConfirmDialog/ConfirmDialogDirective":94,"./Components/DragFile/DragFileDirective":95,"./Components/DropFile/DropFileDirective":96,"./Components/FileTree/FileTreeDirective":98,"./Components/GiveFocus/GiveFocusDirective":99,"./Components/LiteralInput/LiteralInputDirective":100,"./Components/Notifier/NotifierDirective":101,"./Components/PanelHandle/PanelHandleDirective":103,"./Components/SelectInput/SelectInputDirective":104,"./Components/StepInput/StepInputDirective":106,"./Components/Submit/SubmitDirective":107,"./Components/TextInput/TextInputDirective":108,"./Components/VariableInput/VariableInputDirective":109,"./Validators/ExampleNameValidator":122,"./Validators/FileNameValidator":123,"./Validators/VariableNameValidator":124,"angular":9}],111:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71140,6 +71161,48 @@ arguments[4][117][0].apply(exports,arguments)
 },{"../Core":110,"dup":117,"lodash":51,"socket.io-client":69}],119:[function(require,module,exports){
 'use strict';
 
+// Module:
+//var ControlPanel = require('../ControlPanel');
+
+// Module:
+var Core = require('../Core');
+
+// Dependencies:
+require('../Components/Notifier/NotifierService');
+
+var RunnerService = function RunnerService (
+    notifierService,
+    realTimeService
+) {
+    this.baseUrl = null;
+    this.featureArray = [];
+
+    return {
+        runProtractor: runProtractor
+    };
+
+    function runProtractor (options) {        
+        options = options || {};
+        options.baseUrl = this.baseUrl;
+        options.featureArray = this.featureArray;        
+        var connection = realTimeService.connect('run-protractor', {
+            'protractor-out': notify,
+            'protractor-err': notify
+        });
+        connection.emit('run', options);
+    }
+
+    function notify (data) {
+        notifierService[data.type](data.message);
+    }
+
+};
+RunnerService.$inject = ['notifierService', 'realTimeService'];
+
+Core.service('runnerServices', RunnerService);
+},{"../Components/Notifier/NotifierService":102,"../Core":110}],120:[function(require,module,exports){
+'use strict';
+
 // Utilities:
 var _ = require('lodash');
 
@@ -71192,7 +71255,7 @@ var StringToLiteralService = function () {
 
 Core.service('stringToLiteralService', StringToLiteralService);
 
-},{"../Core":110,"lodash":51}],120:[function(require,module,exports){
+},{"../Core":110,"lodash":51}],121:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -71213,7 +71276,7 @@ var ValidationService = function () {
 
 Core.service('validationService', ValidationService);
 
-},{"../Core":110,"charfunk":18}],121:[function(require,module,exports){
+},{"../Core":110,"charfunk":18}],122:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71252,7 +71315,7 @@ ExampleNameValidator.$inject = ['validationService', 'StepDeclarationModel'];
 
 Core.directive('exampleName', ExampleNameValidator);
 
-},{"../../features/FeatureEditor/Models/StepDeclarationModel":153,"../Core":110,"../Services/ValidationService":120,"bluebird":15,"lodash":51}],122:[function(require,module,exports){
+},{"../../features/FeatureEditor/Models/StepDeclarationModel":154,"../Core":110,"../Services/ValidationService":121,"bluebird":15,"lodash":51}],123:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71297,7 +71360,7 @@ FileNameValidator.$inject = ['notifierService'];
 
 Core.directive('fileName', FileNameValidator);
 
-},{"../Components/Notifier/NotifierService":102,"../Core":110,"lodash":51}],123:[function(require,module,exports){
+},{"../Components/Notifier/NotifierService":102,"../Core":110,"lodash":51}],124:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71367,7 +71430,7 @@ VariableNameValidator.$inject = ['$rootScope', 'notifierService', 'validationSer
 
 Core.directive('variableName', VariableNameValidator);
 
-},{"../Components/Notifier/NotifierService":102,"../Core":110,"../Services/ValidationService":120,"bluebird":15,"change-case":17,"lodash":51}],124:[function(require,module,exports){
+},{"../Components/Notifier/NotifierService":102,"../Core":110,"../Services/ValidationService":121,"bluebird":15,"change-case":17,"lodash":51}],125:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71532,7 +71595,7 @@ $http.get('/config')
     });
 });
 
-},{"./Core/Core":110,"./Core/Services/FileStructureService":114,"./Core/Services/HttpResponseInterceptor":115,"./Core/Services/RealTimeService":117,"./features/ComponentEditor/ComponentEditor":125,"./features/ComponentEditor/ComponentEditorController":126,"./features/ComponentEditor/Services/ComponentFileService":138,"./features/ControlPanel/ControlPanel":144,"./features/ControlPanel/ControlPanelController":145,"./features/FeatureEditor/FeatureEditor":148,"./features/FeatureEditor/FeatureEditorController":149,"./features/FeatureEditor/Services/FeatureFileService":155,"./features/MockDataEditor/MockDataEditorController":161,"./features/MockDataEditor/Services/MockDataFileService":163,"./features/StepDefinitionEditor/Services/StepDefinitionFileService":174,"./features/StepDefinitionEditor/StepDefinitionEditorController":179,"angular":9,"angular-local-storage":2,"angular-messages":4,"angular-mocks":5,"angular-sanitize":7,"angular-sortable":54,"angular-ui-router":8,"bluebird":15,"lodash":51}],125:[function(require,module,exports){
+},{"./Core/Core":110,"./Core/Services/FileStructureService":114,"./Core/Services/HttpResponseInterceptor":115,"./Core/Services/RealTimeService":117,"./features/ComponentEditor/ComponentEditor":126,"./features/ComponentEditor/ComponentEditorController":127,"./features/ComponentEditor/Services/ComponentFileService":139,"./features/ControlPanel/ControlPanel":145,"./features/ControlPanel/ControlPanelController":146,"./features/FeatureEditor/FeatureEditor":149,"./features/FeatureEditor/FeatureEditorController":150,"./features/FeatureEditor/Services/FeatureFileService":156,"./features/MockDataEditor/MockDataEditorController":162,"./features/MockDataEditor/Services/MockDataFileService":164,"./features/StepDefinitionEditor/Services/StepDefinitionFileService":175,"./features/StepDefinitionEditor/StepDefinitionEditorController":180,"angular":9,"angular-local-storage":2,"angular-messages":4,"angular-mocks":5,"angular-sanitize":7,"angular-sortable":54,"angular-ui-router":8,"bluebird":15,"lodash":51}],126:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71545,7 +71608,7 @@ var ComponentEditor = angular.module('ComponentEditor', ['Core']);
 
 module.exports = ComponentEditor;
 
-},{"../../Core/Core":110,"angular":9}],126:[function(require,module,exports){
+},{"../../Core/Core":110,"angular":9}],127:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -71590,7 +71653,7 @@ ComponentEditorController.$inject = ['$scope', '$window', '$state', 'confirmDial
 
 ComponentEditor.controller('ComponentEditorController', ComponentEditorController);
 
-},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":159,"./ComponentEditor":125,"./Models/ComponentModel":130,"./Services/ComponentFileService":138}],127:[function(require,module,exports){
+},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":160,"./ComponentEditor":126,"./Models/ComponentModel":131,"./Services/ComponentFileService":139}],128:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71752,7 +71815,7 @@ ComponentEditor.factory('ActionModel', ['astCreatorService', 'ParameterModel', '
     return createActionModelConstructor(astCreatorService, ParameterModel, InteractionModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":125,"./InteractionModel":133,"./ParameterModel":135,"change-case":17,"lodash":51}],128:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":126,"./InteractionModel":134,"./ParameterModel":136,"change-case":17,"lodash":51}],129:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -71849,7 +71912,7 @@ ComponentEditor.factory('ArgumentModel', ['astCreatorService', 'stringToLiteralS
     return createArgumentModelConstructor(astCreatorService, stringToLiteralService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":119,"../ComponentEditor":125,"lodash":51}],129:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":120,"../ComponentEditor":126,"lodash":51}],130:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -71914,7 +71977,7 @@ ComponentEditor.factory('BrowserModel', function () {
     return createBrowserModelConstructor();
 });
 
-},{"../ComponentEditor":125}],130:[function(require,module,exports){
+},{"../ComponentEditor":126}],131:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72083,7 +72146,7 @@ ComponentEditor.factory('ComponentModel', ['astCreatorService', 'BrowserModel', 
     return createComponentModelConstructor(astCreatorService, BrowserModel, ElementModel, ActionModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":125,"./ActionModel":127,"./BrowserModel":129,"./ElementModel":131,"change-case":17,"lodash":51}],131:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":126,"./ActionModel":128,"./BrowserModel":130,"./ElementModel":132,"change-case":17,"lodash":51}],132:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72335,7 +72398,7 @@ ComponentEditor.factory('ElementModel', ['astCreatorService', 'stringToLiteralSe
     return createElementModelConstructor(astCreatorService, stringToLiteralService, FilterModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":119,"../ComponentEditor":125,"./FilterModel":132,"change-case":17,"lodash":51}],132:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":120,"../ComponentEditor":126,"./FilterModel":133,"change-case":17,"lodash":51}],133:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72445,7 +72508,7 @@ ComponentEditor.factory('FilterModel', ['astCreatorService', 'stringToLiteralSer
     return createFilterModelConstructor(astCreatorService, stringToLiteralService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":119,"../ComponentEditor":125,"lodash":51}],133:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":120,"../ComponentEditor":126,"lodash":51}],134:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72556,7 +72619,7 @@ ComponentEditor.factory('InteractionModel', ['astCreatorService', 'MethodModel',
     return createInteractionModelConstructor(astCreatorService, MethodModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":125,"./MethodModel":134,"lodash":51}],134:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":126,"./MethodModel":135,"lodash":51}],135:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72617,7 +72680,7 @@ ComponentEditor.factory('MethodModel', ['ArgumentModel', function (
     return createMethodModelConstructor(ArgumentModel);
 }]);
 
-},{"../ComponentEditor":125,"./ArgumentModel":128,"lodash":51}],135:[function(require,module,exports){
+},{"../ComponentEditor":126,"./ArgumentModel":129,"lodash":51}],136:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72686,7 +72749,7 @@ ComponentEditor.factory('ParameterModel', ['astCreatorService', function (
     return createParameterModelConstructor(astCreatorService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":125,"change-case":17,"lodash":51}],136:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../ComponentEditor":126,"change-case":17,"lodash":51}],137:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72754,7 +72817,7 @@ ActionParserService.$inject = ['ParameterParserService', 'InteractionParserServi
 
 ComponentEditor.service('ActionParserService', ActionParserService);
 
-},{"../ComponentEditor":125,"../Models/ActionModel":127,"./InteractionParserService":142,"./ParameterParserService":143,"assert":11,"lodash":51}],137:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/ActionModel":128,"./InteractionParserService":143,"./ParameterParserService":144,"assert":11,"lodash":51}],138:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -72779,7 +72842,7 @@ ArgumentParserService.$inject = ['ArgumentModel'];
 
 ComponentEditor.service('ArgumentParserService', ArgumentParserService);
 
-},{"../ComponentEditor":125,"../Models/ArgumentModel":128}],138:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/ArgumentModel":129}],139:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -72801,7 +72864,7 @@ ComponentFileService.$inject = ['$http', 'ComponentParserService', 'fileStructur
 
 ComponentEditor.service('ComponentFileService', ComponentFileService);
 
-},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../ComponentEditor":125,"./ComponentParserService":139}],139:[function(require,module,exports){
+},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../ComponentEditor":126,"./ComponentParserService":140}],140:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -72885,7 +72948,7 @@ ComponentParserService.$inject = ['persistentStateService', 'ElementParserServic
 
 ComponentEditor.service('ComponentParserService', ComponentParserService);
 
-},{"../../../Core/Services/PersistentStateService":116,"../ComponentEditor":125,"../Models/ComponentModel":130,"../Services/ActionParserService":136,"../Services/ElementParserService":140,"assert":11,"lodash":51}],140:[function(require,module,exports){
+},{"../../../Core/Services/PersistentStateService":116,"../ComponentEditor":126,"../Models/ComponentModel":131,"../Services/ActionParserService":137,"../Services/ElementParserService":141,"assert":11,"lodash":51}],141:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73013,7 +73076,7 @@ ElementParserService.$inject = ['FilterParserService', 'ElementModel'];
 
 ComponentEditor.service('ElementParserService', ElementParserService);
 
-},{"../ComponentEditor":125,"../Models/ElementModel":131,"../Services/FilterParserService":141,"assert":11,"lodash":51}],141:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/ElementModel":132,"../Services/FilterParserService":142,"assert":11,"lodash":51}],142:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73093,7 +73156,7 @@ FilterParserService.$inject = ['FilterModel'];
 
 ComponentEditor.service('FilterParserService', FilterParserService);
 
-},{"../ComponentEditor":125,"../Models/FilterModel":132,"assert":11,"lodash":51}],142:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/FilterModel":133,"assert":11,"lodash":51}],143:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73213,7 +73276,7 @@ InteractionParserService.$inject = ['ArgumentParserService', 'InteractionModel']
 
 ComponentEditor.service('InteractionParserService', InteractionParserService);
 
-},{"../ComponentEditor":125,"../Models/InteractionModel":133,"./ArgumentParserService":137,"assert":11,"lodash":51}],143:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/InteractionModel":134,"./ArgumentParserService":138,"assert":11,"lodash":51}],144:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -73235,7 +73298,7 @@ ParameterParserService.$inject = ['ParameterModel'];
 
 ComponentEditor.service('ParameterParserService', ParameterParserService);
 
-},{"../ComponentEditor":125,"../Models/ParameterModel":135}],144:[function(require,module,exports){
+},{"../ComponentEditor":126,"../Models/ParameterModel":136}],145:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73248,7 +73311,7 @@ var ControlPanel = angular.module('ControlPanel', ['Core']);
 
 module.exports = ControlPanel;
 
-},{"../../Core/Core":110,"angular":9}],145:[function(require,module,exports){
+},{"../../Core/Core":110,"angular":9}],146:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73258,16 +73321,17 @@ var _ = require('lodash');
 var ControlPanel = require('./ControlPanel');
 
 // Dependencies:
-require('./Services/RunnerService');
+//require('./Services/RunnerService');
+require('../../Core/Services/RunnerService')
 require('./Services/ServerStatusService');
 
 var ControlPanelController = (function () {
     var ControlPanelController = function ControlPanelController (
-        runnerService,
+        runnerServices,
         serverStatusService,
         config
     ) {
-        this.runnerService = runnerService;
+        this.runnerServices = runnerServices;
         this.serverStatusService = serverStatusService;
 
         this.environments = config.environments;
@@ -73279,15 +73343,15 @@ var ControlPanelController = (function () {
             },
             set: function (newEnv) {
                 environment = newEnv;
-                runnerService.baseUrl = environment;
+                runnerServices.baseUrl = environment;
             }
         });
         this.environment = _.first(this.environments);
     }
-    ControlPanelController.$inject = ['runnerService', 'serverStatusService', 'config'];
+    ControlPanelController.$inject = ['runnerServices', 'serverStatusService', 'config'];
 
     ControlPanelController.prototype.runProtractor = function () {
-        this.runnerService.runProtractor();
+        this.runnerServices.runProtractor();
     };
 
     ControlPanelController.prototype.isServerRunning = function () {
@@ -73299,7 +73363,7 @@ var ControlPanelController = (function () {
 
 ControlPanel.controller('ControlPanelController', ControlPanelController);
 
-},{"./ControlPanel":144,"./Services/RunnerService":146,"./Services/ServerStatusService":147,"lodash":51}],146:[function(require,module,exports){
+},{"../../Core/Services/RunnerService":119,"./ControlPanel":145,"./Services/ServerStatusService":148,"lodash":51}],147:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -73338,7 +73402,7 @@ RunnerService.$inject = ['notifierService', 'realTimeService'];
 
 ControlPanel.service('runnerService', RunnerService);
 
-},{"../../../Core/Components/Notifier/NotifierService":102,"../ControlPanel":144}],147:[function(require,module,exports){
+},{"../../../Core/Components/Notifier/NotifierService":102,"../ControlPanel":145}],148:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -73386,7 +73450,7 @@ ServerStatusService.$inject = ['notifierService', 'realTimeService', '$rootScope
 
 ControlPanel.service('serverStatusService', ServerStatusService);
 
-},{"../../../Core/Components/Notifier/NotifierService":102,"../../../Core/Services/RealtimeService":118,"../ControlPanel":144}],148:[function(require,module,exports){
+},{"../../../Core/Components/Notifier/NotifierService":102,"../../../Core/Services/RealtimeService":118,"../ControlPanel":145}],149:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73402,7 +73466,7 @@ FeatureEditor.constant('FeatureNewLine', '\n');
 
 module.exports = FeatureEditor;
 
-},{"../../Core/Core":110,"angular":9}],149:[function(require,module,exports){
+},{"../../Core/Core":110,"angular":9}],150:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -73414,6 +73478,7 @@ require('../../Core/Services/ConfirmDialogService');
 require('../../Core/Services/PersistentStateService');
 require('../../Core/Components/Notifier/NotifierService');
 require('../ControlPanel/Services/RunnerService');
+require('../../Core/Services/RunnerService');
 require('./Services/FeatureFileService');
 require('./Models/FeatureModel');
 
@@ -73428,7 +73493,7 @@ var FeatureEditorController = function FeatureEditorController (
     FeatureModel,
     featureFileStructure,
     featurePath,
-    runnerService
+    runnerServices
 ) {
     var controller = new FileEditorController(
         $scope,
@@ -73443,17 +73508,17 @@ var FeatureEditorController = function FeatureEditorController (
         featurePath
     );
 
-    this.runnerService = runnerService;
+    this.runnerServices = runnerServices;
     controller.debug = false;
     this.controller = controller;   
     controller.runFeature = runFeature.bind(this);
     return controller;
 };
-FeatureEditorController.$inject = ['$scope', '$window', '$state', 'confirmDialogService', 'persistentStateService', 'notifierService', 'FeatureFileService', 'FeatureModel', 'featureFileStructure', 'featurePath', 'runnerService'];
+FeatureEditorController.$inject = ['$scope', '$window', '$state', 'confirmDialogService', 'persistentStateService', 'notifierService', 'FeatureFileService', 'FeatureModel', 'featureFileStructure', 'featurePath', 'runnerServices'];
 
 function runFeature (toRun) {      
     if (toRun){
-        this.runnerService.runProtractor({
+        this.runnerServices.runProtractor({
             feature: toRun,
             debug: this.controller.debug
         });
@@ -73462,7 +73527,7 @@ function runFeature (toRun) {
 
 FeatureEditor.controller('FeatureEditorController', FeatureEditorController);
 
-},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../ControlPanel/Services/RunnerService":146,"../FileEditor/FileEditorController":159,"./FeatureEditor":148,"./Models/FeatureModel":151,"./Services/FeatureFileService":155}],150:[function(require,module,exports){
+},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../../Core/Services/RunnerService":119,"../ControlPanel/Services/RunnerService":147,"../FileEditor/FileEditorController":160,"./FeatureEditor":149,"./Models/FeatureModel":152,"./Services/FeatureFileService":156}],151:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73524,7 +73589,7 @@ FeatureEditor.factory('ExampleModel', ['stringToLiteralService', 'FeatureIndent'
     return createExampleModelConstructor(stringToLiteralService, FeatureIndent);
 }]);
 
-},{"../../../Core/Services/StringToLiteralService":119,"../FeatureEditor":148,"lodash":51}],151:[function(require,module,exports){
+},{"../../../Core/Services/StringToLiteralService":120,"../FeatureEditor":149,"lodash":51}],152:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73548,9 +73613,10 @@ var createFeatureModelConstructor = function (
             availableStepDefinitions: {
                 get: function () {                   
                     return _.map(options.availableStepDefinitions, function(stepDefinition) {
-                        return {
+                        return {                           
                             type: stepDefinition.name.substring(0, stepDefinition.name.indexOf(' ')),
-                            name: stepDefinition.name.substring(stepDefinition.name.indexOf(' ') + 1),
+                            step: stepDefinition.name.substring(stepDefinition.name.indexOf(' ') + 1),
+                            name: ((stepDefinition.path).split('step-definitions\\')[1]).split('.')[0],
                             path: stepDefinition.path,
                             pending: stepDefinition.isPending
                         }
@@ -73601,9 +73667,9 @@ var createFeatureModelConstructor = function (
     };
 
     FeatureModel.prototype.findStep = function (step) {
-        var stepDefinition = _.find(this.availableStepDefinitions, function(stepDefinition){
-            return stepDefinition.name.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '');
-        });
+        var stepDefinition = _.find(this.availableStepDefinitions, function(stepDefinition){           
+            return stepDefinition.step.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '');
+        });        
         return stepDefinition;
     };
 
@@ -73633,7 +73699,7 @@ FeatureEditor.factory('FeatureModel', ['ScenarioModel', 'FeatureIndent', 'Featur
     return createFeatureModelConstructor(ScenarioModel, FeatureIndent, FeatureNewLine);
 }]);
 
-},{"../FeatureEditor":148,"./ScenarioModel":152,"lodash":51}],152:[function(require,module,exports){
+},{"../FeatureEditor":149,"./ScenarioModel":153,"lodash":51}],153:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73744,7 +73810,7 @@ FeatureEditor.factory('ScenarioModel', ['StepDeclarationModel', 'ExampleModel', 
     return createScenarioModelConstructor(StepDeclarationModel, ExampleModel, FeatureIndent, FeatureNewLine);
 }]);
 
-},{"../FeatureEditor":148,"./ExampleModel":150,"./StepDeclarationModel":153,"lodash":51}],153:[function(require,module,exports){
+},{"../FeatureEditor":149,"./ExampleModel":151,"./StepDeclarationModel":154,"lodash":51}],154:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73787,7 +73853,7 @@ FeatureEditor.factory('StepDeclarationModel', function () {
     return createStepDeclarationModelConstructor();
 });
 
-},{"../FeatureEditor":148,"lodash":51}],154:[function(require,module,exports){
+},{"../FeatureEditor":149,"lodash":51}],155:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73818,7 +73884,7 @@ ExampleParserService.$inject = ['ExampleModel'];
 
 FeatureEditor.service('ExampleParserService', ExampleParserService);
 
-},{"../FeatureEditor":148,"../Models/ExampleModel":150,"lodash":51}],155:[function(require,module,exports){
+},{"../FeatureEditor":149,"../Models/ExampleModel":151,"lodash":51}],156:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73851,7 +73917,7 @@ FeatureFileService.$inject = ['$http', 'FeatureParserService', 'fileStructureSer
 
 FeatureEditor.service('FeatureFileService', FeatureFileService);
 
-},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../FeatureEditor":148,"./FeatureParserService":156,"lodash":51}],156:[function(require,module,exports){
+},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../FeatureEditor":149,"./FeatureParserService":157,"lodash":51}],157:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73908,7 +73974,7 @@ FeatureParserService.$inject = ['ScenarioParserService', 'FeatureModel'];
 
 FeatureEditor.service('FeatureParserService', FeatureParserService);
 
-},{"../FeatureEditor":148,"../Models/FeatureModel":151,"./ScenarioParserService":157,"assert":11,"lodash":51}],157:[function(require,module,exports){
+},{"../FeatureEditor":149,"../Models/FeatureModel":152,"./ScenarioParserService":158,"assert":11,"lodash":51}],158:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -73977,7 +74043,7 @@ ScenarioParserService.$inject = ['StepDeclarationParserService', 'ExampleParserS
 
 FeatureEditor.service('ScenarioParserService', ScenarioParserService);
 
-},{"../FeatureEditor":148,"../Models/ScenarioModel":152,"./ExampleParserService":154,"./StepDeclarationParserService":158,"assert":11,"lodash":51}],158:[function(require,module,exports){
+},{"../FeatureEditor":149,"../Models/ScenarioModel":153,"./ExampleParserService":155,"./StepDeclarationParserService":159,"assert":11,"lodash":51}],159:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -74004,7 +74070,7 @@ StepDeclarationParserService.$inject = ['StepDeclarationModel'];
 
 FeatureEditor.service('StepDeclarationParserService', StepDeclarationParserService);
 
-},{"../FeatureEditor":148,"../Models/StepDeclarationModel":153}],159:[function(require,module,exports){
+},{"../FeatureEditor":149,"../Models/StepDeclarationModel":154}],160:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74140,7 +74206,7 @@ var FileEditorController = (function () {
 
 module.exports = FileEditorController;
 
-},{"bluebird":15,"lodash":51}],160:[function(require,module,exports){
+},{"bluebird":15,"lodash":51}],161:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74153,7 +74219,7 @@ var MockDataEditor = angular.module('MockDataEditor', ['Core']);
 
 module.exports = MockDataEditor;
 
-},{"../../Core/Core":110,"angular":9}],161:[function(require,module,exports){
+},{"../../Core/Core":110,"angular":9}],162:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -74196,7 +74262,7 @@ MockDataEditorController.$inject = ['$scope', '$window', '$state', 'confirmDialo
 
 MockDataEditor.controller('MockDataEditorController', MockDataEditorController);
 
-},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":159,"./MockDataEditor":160,"./Models/MockDataModel":162,"./Services/MockDataFileService":163}],162:[function(require,module,exports){
+},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":160,"./MockDataEditor":161,"./Models/MockDataModel":163,"./Services/MockDataFileService":164}],163:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -74248,7 +74314,7 @@ MockDataEditor.factory('MockDataModel', function () {
     return createMockDataModelConstructor();
 });
 
-},{"../MockDataEditor":160}],163:[function(require,module,exports){
+},{"../MockDataEditor":161}],164:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -74270,7 +74336,7 @@ MockDataFileService.$inject = ['$http', 'MockDataParserService', 'fileStructureS
 
 MockDataEditor.service('MockDataFileService', MockDataFileService);
 
-},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../MockDataEditor":160,"./MockDataParserService":164}],164:[function(require,module,exports){
+},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../MockDataEditor":161,"./MockDataParserService":165}],165:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -74301,7 +74367,7 @@ MockDataParserService.$inject = ['MockDataModel'];
 
 MockDataEditor.service('MockDataParserService', MockDataParserService);
 
-},{"../MockDataEditor":160,"../Models/MockDataModel":162}],165:[function(require,module,exports){
+},{"../MockDataEditor":161,"../Models/MockDataModel":163}],166:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74386,7 +74452,7 @@ StepDefinitionEditor.factory('ComponentInstanceModel', ['astCreatorService', fun
     return createComponentInstanceModelConstructor(astCreatorService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":178,"change-case":17,"path":61}],166:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":179,"change-case":17,"path":61}],167:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74499,7 +74565,7 @@ StepDefinitionEditor.factory('ExpectationModel', ['astCreatorService', 'stringTo
     return createExpectationModelConstructor(astCreatorService, stringToLiteralService, ArgumentModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":119,"../../ComponentEditor/Models/ArgumentModel":128,"../StepDefinitionEditor":178,"lodash":51}],167:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../../../Core/Services/StringToLiteralService":120,"../../ComponentEditor/Models/ArgumentModel":129,"../StepDefinitionEditor":179,"lodash":51}],168:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74582,7 +74648,7 @@ StepDefinitionEditor.factory('MockDataInstanceModel', ['astCreatorService', func
     return createMockDataInstanceModelConstructor(astCreatorService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":178,"change-case":17,"path":61}],168:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":179,"change-case":17,"path":61}],169:[function(require,module,exports){
 'use strict';
 
 // Utilities;
@@ -74646,7 +74712,7 @@ StepDefinitionEditor.factory('MockModel', ['astCreatorService', function (
     return createMockModelConstructor(astCreatorService);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":178,"lodash":51}],169:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":179,"lodash":51}],170:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -74793,7 +74859,7 @@ StepDefinitionEditor.factory('StepDefinitionModel', ['astCreatorService', 'Compo
     return createStepDefinitionModelConstructor(astCreatorService, ComponentFileService, MockDataFileService, ComponentInstanceModel, MockDataInstanceModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":178,"./ComponentInstanceModel":165,"./MockDataInstanceModel":167,"lodash":51}],170:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":179,"./ComponentInstanceModel":166,"./MockDataInstanceModel":168,"lodash":51}],171:[function(require,module,exports){
 'use strict';
 
 // Utilities;
@@ -74934,7 +75000,7 @@ StepDefinitionEditor.factory('StepModel', ['astCreatorService', 'ExpectationMode
     return createStepModelConstructor(astCreatorService, ExpectationModel, TaskModel, MockModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":178,"./ExpectationModel":166,"./MockModel":168,"./TaskModel":171,"lodash":51}],171:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../StepDefinitionEditor":179,"./ExpectationModel":167,"./MockModel":169,"./TaskModel":172,"lodash":51}],172:[function(require,module,exports){
 'use strict';
 
 // Utilities;
@@ -75031,7 +75097,7 @@ StepDefinitionEditor.factory('TaskModel', ['astCreatorService', 'ArgumentModel',
     return createTaskModelConstructor(astCreatorService, ArgumentModel);
 }]);
 
-},{"../../../Core/Services/ASTCreatorService":111,"../../ComponentEditor/Models/ArgumentModel":128,"../StepDefinitionEditor":178,"lodash":51}],172:[function(require,module,exports){
+},{"../../../Core/Services/ASTCreatorService":111,"../../ComponentEditor/Models/ArgumentModel":129,"../StepDefinitionEditor":179,"lodash":51}],173:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75093,7 +75159,7 @@ ExpectationParserService.$inject = ['ExpectationModel'];
 
 StepDefinitionEditor.service('ExpectationParserService', ExpectationParserService);
 
-},{"../Models/ExpectationModel":166,"../StepDefinitionEditor":178,"lodash":51}],173:[function(require,module,exports){
+},{"../Models/ExpectationModel":167,"../StepDefinitionEditor":179,"lodash":51}],174:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75172,7 +75238,7 @@ MockParserService.$inject = ['MockModel'];
 
 StepDefinitionEditor.service('MockParserService', MockParserService);
 
-},{"../Models/MockModel":168,"../StepDefinitionEditor":178,"assert":11,"lodash":51}],174:[function(require,module,exports){
+},{"../Models/MockModel":169,"../StepDefinitionEditor":179,"assert":11,"lodash":51}],175:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -75194,7 +75260,7 @@ StepDefinitionFileService.$inject = ['$http', 'StepDefinitionParserService', 'fi
 
 StepDefinitionEditor.service('StepDefinitionFileService', StepDefinitionFileService);
 
-},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../StepDefinitionEditor":178,"./StepDefinitionParserService":175}],175:[function(require,module,exports){
+},{"../../../Core/Services/FileService":113,"../../../Core/Services/FileStructureService":114,"../StepDefinitionEditor":179,"./StepDefinitionParserService":176}],176:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75283,7 +75349,7 @@ StepDefinitionParserService.$inject = ['StepParserService', 'StepDefinitionModel
 
 StepDefinitionEditor.service('StepDefinitionParserService', StepDefinitionParserService);
 
-},{"../Models/StepDefinitionModel":169,"../Services/StepParserService":176,"../StepDefinitionEditor":178,"assert":11,"lodash":51}],176:[function(require,module,exports){
+},{"../Models/StepDefinitionModel":170,"../Services/StepParserService":177,"../StepDefinitionEditor":179,"assert":11,"lodash":51}],177:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75404,7 +75470,7 @@ StepParserService.$inject = ['MockParserService', 'TaskParserService', 'Expectat
 
 StepDefinitionEditor.service('StepParserService', StepParserService);
 
-},{"../Models/StepModel":170,"../Services/ExpectationParserService":172,"../Services/MockParserService":173,"../Services/TaskParserService":177,"../StepDefinitionEditor":178,"assert":11,"lodash":51}],177:[function(require,module,exports){
+},{"../Models/StepModel":171,"../Services/ExpectationParserService":173,"../Services/MockParserService":174,"../Services/TaskParserService":178,"../StepDefinitionEditor":179,"assert":11,"lodash":51}],178:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75492,7 +75558,7 @@ TaskParserService.$inject = ['TaskModel'];
 
 StepDefinitionEditor.service('TaskParserService', TaskParserService);
 
-},{"../Models/TaskModel":171,"../StepDefinitionEditor":178,"assert":11,"lodash":51}],178:[function(require,module,exports){
+},{"../Models/TaskModel":172,"../StepDefinitionEditor":179,"assert":11,"lodash":51}],179:[function(require,module,exports){
 'use strict';
 
 // Utilities:
@@ -75505,7 +75571,7 @@ var StepDefinitionEditor = angular.module('StepDefinitionEditor', ['Core']);
 
 module.exports = StepDefinitionEditor;
 
-},{"../../Core/Core":110,"angular":9}],179:[function(require,module,exports){
+},{"../../Core/Core":110,"angular":9}],180:[function(require,module,exports){
 'use strict';
 
 // Module:
@@ -75599,4 +75665,4 @@ StepDefinitionEditorController.$inject = ['$scope', '$window', '$state', 'confir
 
 StepDefinitionEditor.controller('StepDefinitionEditorController', StepDefinitionEditorController);
 
-},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":159,"./Services/StepDefinitionFileService":174,"./StepDefinitionEditor":178,"lodash":51}]},{},[124]);
+},{"../../Core/Components/Notifier/NotifierService":102,"../../Core/Services/ConfirmDialogService":112,"../../Core/Services/PersistentStateService":116,"../FileEditor/FileEditorController":160,"./Services/StepDefinitionFileService":175,"./StepDefinitionEditor":179,"lodash":51}]},{},[125]);
