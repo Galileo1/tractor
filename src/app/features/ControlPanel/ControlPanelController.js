@@ -7,16 +7,17 @@ var _ = require('lodash');
 var ControlPanel = require('./ControlPanel');
 
 // Dependencies:
-require('./Services/RunnerService');
+//require('./Services/RunnerService');
+require('../../Core/Services/RunnerService')
 require('./Services/ServerStatusService');
 
 var ControlPanelController = (function () {
     var ControlPanelController = function ControlPanelController (
-        runnerService,
+        runnerServices,
         serverStatusService,
         config
     ) {
-        this.runnerService = runnerService;
+        this.runnerServices = runnerServices;
         this.serverStatusService = serverStatusService;
 
         this.environments = config.environments;
@@ -28,14 +29,14 @@ var ControlPanelController = (function () {
             },
             set: function (newEnv) {
                 environment = newEnv;
-                runnerService.baseUrl = environment;
+                runnerServices.baseUrl = environment;
             }
         });
         this.environment = _.first(this.environments);
     }
 
     ControlPanelController.prototype.runProtractor = function () {
-        this.runnerService.runProtractor();
+        this.runnerServices.runProtractor();
     };
 
     ControlPanelController.prototype.isServerRunning = function () {

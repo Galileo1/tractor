@@ -49,7 +49,7 @@ function run (socket, runOptions) {
 }
 
 function startProtractor (socket, runOptions) {
-    let featureToRun;
+    let featureToRun =[];
     let resolve;
     let reject;
     let deferred = new Promise((...args) => {
@@ -63,13 +63,22 @@ function startProtractor (socket, runOptions) {
     }
 
     if (runOptions.hasOwnProperty("feature")) {
-        featureToRun = join('/features', '/**/', `${runOptions.feature}.feature`);
-    } else {
-        featureToRun = '/features/**/*.feature';
+        featureToRun.push(join('/features', '/**/', `${runOptions.feature}.feature`));
+    } else if (runOptions.featureArray.length > 0) {
+        _.each(runOptions.featureArray, (value) =>
+            featureToRun.push(join('/features', '/**/', value))
+        )
         runOptions.debug = false;
+    } else {        
+        featureToRun.push('/features/**/*.feature');
+        runOptions.debug = false;        
     }
 
-    let specs = join(config.testDirectory, featureToRun);
+    let specs = []; 
+    _.each(featureToRun, (feature) =>
+            specs.push(join(config.testDirectory, feature))
+    );
+    console.log("Running following features : ",_.flatten(specs))
 
     let protractor = spawn('node', [PROTRACTOR_PATH, E2E_PATH, '--baseUrl', runOptions.baseUrl, '--specs', specs, '--params.debug', runOptions.debug]);
 

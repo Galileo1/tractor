@@ -75,12 +75,9 @@ var createFeatureModelConstructor = function (
     };
 
     FeatureModel.prototype.findStep = function (step) {
-        var stepDefinition = _.find(this.availableStepDefinitions, function(stepDefinition){
-            console.log(step)
-            console.log(stepDefinition)
+        var stepDefinition = _.find(this.availableStepDefinitions, function(stepDefinition){           
             return stepDefinition.step.replace(/[_]/g,'') === step.replace(/[*_\/|"<>?]/g, '');
-        });
-        //console.log(((stepDefinition.path).split('step-definitions\\')[1]).split('.')[0])
+        });        
         return stepDefinition;
     };
 

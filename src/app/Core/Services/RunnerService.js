@@ -20,10 +20,10 @@ var RunnerService = function RunnerService (
         runProtractor: runProtractor
     };
 
-
-    function runProtractor (options) {
+    function runProtractor (options) {        
         options = options || {};
         options.baseUrl = this.baseUrl;
+        options.featureArray = this.featureArray;        
         var connection = realTimeService.connect('run-protractor', {
             'protractor-out': notify,
             'protractor-err': notify
@@ -37,4 +37,4 @@ var RunnerService = function RunnerService (
 
 };
 
-Core.service('runnerService', RunnerService);
+Core.service('runnerServices', RunnerService);
