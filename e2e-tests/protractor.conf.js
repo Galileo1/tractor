@@ -4,12 +4,14 @@ exports.config = {
     specs: ['features/**/*.feature'],
     capabilities: { 'browserName': 'chrome' },
     params: { debug: false },
-    framework: 'cucumber',
+    framework: 'custom',
+    frameworkPath: require.resolve('protractor-cucumber-framework'),
     cucumberOpts: {
         require: [
             'support/**/*.js',
-            'step-definitions/**/*.js'
-        ],
-        format: 'pretty'
+            'step-definitions/**/*.js'          
+        ],        
+        format: 'pretty',
+        tags: []
     }
 };
