@@ -10,7 +10,7 @@ exports.config = {
     capabilities: { 
         'browserName': 'chrome',
         'shardTestFiles': true,
-        'maxInstances': 0
+        'maxInstances': 1
     },
     params: { debug: false },
     framework: 'custom',
