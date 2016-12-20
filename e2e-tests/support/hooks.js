@@ -21,7 +21,7 @@ function createReporter () {
         fs.writeFileAsync(cucumberReport, content)
          /* eslint-disable prefer-arrow-callback */
         .then(function () {
-            return htmlReportWriter(outputDir, jsonFileName);
+           // return htmlReportWriter(cucumberReport);
         })
          /* eslint-disable prefer-template */
         .catch(function (error) {

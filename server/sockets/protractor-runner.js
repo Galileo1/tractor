@@ -92,6 +92,13 @@ function startProtractor (socket, runOptions) {
         console.log(`Running cucumber with tag : ${runOptions.tag}`);
     }
 
+    // instances
+    if (runOptions.instances) {
+        protractorArgs.push('--cucumberOpts.tags');
+        protractorArgs.push(runOptions.tag);
+        console.log(`Running cucumber with tag : ${runOptions.tag}`);
+    }
+
     let protractor = spawn('node', protractorArgs);
 
     protractor.stdout.on('data', sendDataToClient.bind(socket));

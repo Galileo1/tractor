@@ -1,7 +1,12 @@
-'use strict';
+﻿'use strict';
 
 /* eslint-disable no-var, prefer-arrow-callback */
 var HttpBackend = require('httpbackend');
+var reporter = require('cucumber-html-reporter');
+var Cucumber = require('cucumber');
+var path = require('path');
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 
 var CustomWorld = (function () {
     var chai = require('chai');
@@ -22,12 +27,34 @@ module.exports = function () {
         return w;
     };
 
+    // TODO: Get rid of `singleFeature` here. It works ok,
+    // but I’d rather see if there’s a way to get the number of
+    // specs from within the `StepResult` hook…
+    var singleFeature = false;
     /* eslint-disable new-cap */
     this.Before(function (scenario, callback) {       
     /* eslint-enable new-cap */
         global.httpBackend = new HttpBackend(global.browser);
-        callback();
+        global.browser.getProcessedConfig()
+        .then(function (value) {
+            if (value.specs.length === 1) {
+                singleFeature = true;
+            }
+            callback();
+        });
     });
+
+    // /* eslint-disable new-cap */
+     this.StepResult(function (event, callback) {
+         var stepResult;
+         if (singleFeature) {
+             stepResult = event.getPayloadItem('stepResult');
+             if (stepResult.isFailed()) {
+                // global.browser.pause();
+             }
+         }
+         callback();
+     });
 
     /* eslint-disable new-cap */
     this.StepResult(function (stepResult, callback) {
@@ -86,7 +113,8 @@ module.exports = function () {
                 }
             });
         }
-    });
 
+    });
+     
     return this.World;
 };

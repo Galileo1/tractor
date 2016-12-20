@@ -44,14 +44,18 @@ var ControlPanelController = (function () {
          });
      
         this.environment = _.first(this.environments);
-        this.tag = _.first(this.tags);        
+        this.tag = _.first(this.tags);
+        this.maxInstance = _.first(this.maxInstances);      
     }
 
     ControlPanelController.prototype.runProtractor = function () {
         this.runnerService.runProtractor({
-            tag: this.tag            
+            tag: this.tag,
+            instances : this.maxInstance
         });
     };
+
+    ControlPanelController.prototype.maxInstances = ['1', '2', '3', '4', '5'];
 
     ControlPanelController.prototype.isServerRunning = function () {
         return this.serverStatusService.isServerRunning();
