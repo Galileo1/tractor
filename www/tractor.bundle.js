@@ -71455,7 +71455,7 @@ tractor.config(['$stateProvider', '$locationProvider', '$urlMatcherFactoryProvid
     .state('tractor', {
         url: '/',
         /* eslint-disable no-path-concat */
-        template: "<header>\r\n    <section class=\"control-panel__top-row\">\r\n        <div>\r\n            <form class=\"control-panel__run-options\" name=\"controlPanelOptions\" novalidate\r\n                ng-submit=\"controlPanel.runProtractor()\">\r\n                <tractor-select\r\n                    label=\"Environment\"\r\n                    model=\"controlPanel\">\r\n                </tractor-select>\r\n                <tractor-select\r\n                    label=\"tag\"\r\n                    model=\"controlPanel\">\r\n                </tractor-select>\r\n                <tractor-submit\r\n                    action=\"Run protractor\">\r\n                </tractor-submit>\r\n            </form>\r\n        </div>\r\n        <span class=\"control-panel__server-status\"\r\n              ng-class=\"{ 'control-panel__server-status--running': controlPanel.isServerRunning() }\"\r\n              ng-attr-title=\"{{ 'Tractor server is ' + (controlPanel.isServerRunning() ? 'running.' : 'not running.') }}\">\r\n        </span>\r\n    </section>\r\n\r\n    <nav>\r\n        <ul>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".components({ file: null })\">Components</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".features({ file: null })\">Features</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".step-definitions({ file: null })\">Step Definitions</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".mock-data({ file: null })\">Mock Data</a>\r\n            </li>\r\n        </ul>\r\n    </nav>\r\n</header>\r\n\r\n<main ui-view></main>\r\n\r\n<tractor-notifier></tractor-notifier>\r\n",
+        template: "<header>\r\n    <section class=\"control-panel__top-row\">\r\n        <div>\r\n            <form class=\"control-panel__run-options\" name=\"controlPanelOptions\" novalidate\r\n                ng-submit=\"controlPanel.runProtractor()\">\r\n                <tractor-select\r\n                    label=\"Environment\"\r\n                    model=\"controlPanel\">\r\n                </tractor-select>\r\n                <tractor-select\r\n                    label=\"tag\"\r\n                    model=\"controlPanel\">\r\n                </tractor-select>\r\n                <tractor-select\r\n                    label=\"MaxInstance\"\r\n                    model=\"controlPanel\">\r\n                </tractor-select>\r\n                <tractor-submit\r\n                    action=\"Run protractor\">\r\n                </tractor-submit>\r\n            </form>\r\n        </div>\r\n        <span class=\"control-panel__server-status\"\r\n              ng-class=\"{ 'control-panel__server-status--running': controlPanel.isServerRunning() }\"\r\n              ng-attr-title=\"{{ 'Tractor server is ' + (controlPanel.isServerRunning() ? 'running.' : 'not running.') }}\">\r\n        </span>\r\n    </section>\r\n\r\n    <nav>\r\n        <ul>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".components({ file: null })\">Components</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".features({ file: null })\">Features</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".step-definitions({ file: null })\">Step Definitions</a>\r\n            </li>\r\n            <li ui-sref-active=\"active\">\r\n                <a ui-sref=\".mock-data({ file: null })\">Mock Data</a>\r\n            </li>\r\n        </ul>\r\n    </nav>\r\n</header>\r\n\r\n<main ui-view></main>\r\n\r\n<tractor-notifier></tractor-notifier>\r\n",
         /* eslint-enable no-path-concat */
         controller: 'ControlPanelController as controlPanel'
     })
@@ -73275,10 +73275,12 @@ var ControlPanelController = (function () {
         this.runnerService = runnerService;
         this.serverStatusService = serverStatusService;
         this.environments = config.environments;
-        this.tags = (config.tags ? getFilteredTags(config.tags) : [] );
+        this.tags = (config.tags ? getFilteredTags(config.tags) : []);
+        this.maxInstances = config.instances || [];
 
         var environment;
-        var tag;        
+        var tag;
+        var maxInstance;
         Object.defineProperties(this, {
             environment: {
                 get: function () {
@@ -73300,13 +73302,15 @@ var ControlPanelController = (function () {
          });
      
         this.environment = _.first(this.environments);
-        this.tag = _.first(this.tags);        
+        this.tag = _.first(this.tags);
+        this.maxInstance = _.first(this.maxInstances);      
     }
     ControlPanelController.$inject = ['runnerService', 'serverStatusService', 'config'];
 
     ControlPanelController.prototype.runProtractor = function () {
         this.runnerService.runProtractor({
-            tag: this.tag            
+            tag: this.tag,
+            instances: this.maxInstance
         });
     };
 

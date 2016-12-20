@@ -92,11 +92,11 @@ function startProtractor (socket, runOptions) {
         console.log(`Running cucumber with tag : ${runOptions.tag}`);
     }
 
-    // instances
-    if (runOptions.instances) {
-        protractorArgs.push('--cucumberOpts.tags');
-        protractorArgs.push(runOptions.tag);
-        console.log(`Running cucumber with tag : ${runOptions.tag}`);
+    // maxInstance
+    if (runOptions.instances > 1) {
+        protractorArgs.push('--capabilities.maxInstances');
+        protractorArgs.push(runOptions.instances);
+        console.log(`Running ${runOptions.instances } instances`);
     }
 
     let protractor = spawn('node', protractorArgs);

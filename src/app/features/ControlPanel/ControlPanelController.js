@@ -19,10 +19,12 @@ var ControlPanelController = (function () {
         this.runnerService = runnerService;
         this.serverStatusService = serverStatusService;
         this.environments = config.environments;
-        this.tags = (config.tags ? getFilteredTags(config.tags) : [] );
+        this.tags = (config.tags ? getFilteredTags(config.tags) : []);
+        this.maxInstances = config.instances || [];
 
         var environment;
-        var tag;        
+        var tag;
+        var maxInstance;
         Object.defineProperties(this, {
             environment: {
                 get: function () {
@@ -51,11 +53,9 @@ var ControlPanelController = (function () {
     ControlPanelController.prototype.runProtractor = function () {
         this.runnerService.runProtractor({
             tag: this.tag,
-            instances : this.maxInstance
+            instances: this.maxInstance
         });
     };
-
-    ControlPanelController.prototype.maxInstances = ['1', '2', '3', '4', '5'];
 
     ControlPanelController.prototype.isServerRunning = function () {
         return this.serverStatusService.isServerRunning();

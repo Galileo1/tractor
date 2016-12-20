@@ -22,6 +22,6 @@ module.exports = {
         '',
         '@smoke',
         '@ignore'
-    ]
-
+    ],
+    instances: ['1','2','3','4','5']
 };
