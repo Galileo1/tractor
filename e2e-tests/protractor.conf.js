@@ -8,9 +8,7 @@ exports.config = {
     allScriptsTimeout: 11000,
     specs: ['features/**/*.feature'],
     capabilities: { 
-        'browserName': 'chrome',
-        'shardTestFiles': true,
-        'maxInstances': 1
+        'browserName': 'chrome'
     },
     params: { debug: false },
     framework: 'custom',
@@ -18,7 +16,7 @@ exports.config = {
     cucumberOpts: {
         require: [
             'support/**/*.js',
-            'step-definitions/**/*.js'          
+            'step-definitions/**/*.js'
         ],        
         format: 'pretty',
         tags: []

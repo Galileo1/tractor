@@ -11,9 +11,7 @@ exports.config = {
     specs: ['features/**/*.feature'],
     /* eslint-disable quote-props */
     capabilities: {
-        'browserName': 'chrome',
-        'shardTestFiles': true,
-        'maxInstances': 1
+        'browserName': 'chrome'
     },
     params: { debug: false },
     framework: 'custom',

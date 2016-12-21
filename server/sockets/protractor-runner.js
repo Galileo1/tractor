@@ -96,9 +96,11 @@ function startProtractor (socket, runOptions) {
     if (runOptions.instances > 1) {
         protractorArgs.push('--capabilities.maxInstances');
         protractorArgs.push(runOptions.instances);
+        protractorArgs.push('--capabilities.shardTestFiles');
+        protractorArgs.push(true);
         console.log(`Running ${runOptions.instances } instances`);
     }
-
+    
     let protractor = spawn('node', protractorArgs);
 
     protractor.stdout.on('data', sendDataToClient.bind(socket));
