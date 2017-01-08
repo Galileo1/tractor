@@ -201,17 +201,29 @@
                                                 model="interaction"
                                                 options="interaction.element.methods"
                                                 as="name">
-                                            </tractor-select>
+                                            </tractor-select>                                    
+                                            
+                                            <div ng-if="interaction.element.name === 'browser' && interaction.method.name === 'sendKeys'"                                          
+                                                 ng-repeat="argument in interaction.arguments">                                                
+                                                 <tractor-select
+                                                    label="{{ argument.name }}"
+                                                    model="interaction">                                                   
+                                                 </tractor-select>                                                            
+                                            </div>
 
+                                                {{interaction.element.name}}
+                                            {{interaction.method.name}}
+
+                                            <!--<div ng-if="interaction.element.name != 'browser' && interaction.method.name != 'sendKeys'" --> 
                                             <div ng-repeat="argument in interaction.arguments">
-                                                <tractor-literal-input
+                                                 <tractor-literal-input
                                                     form="file-editor"
                                                     name="argument.name"
                                                     model="argument"
                                                     description="argument.description"
                                                     required="argument.required"
                                                     type="argument.type">
-                                                </tractor-literal-input>
+                                                 </tractor-literal-input>
                                             </div>
                                         </li>
                                     </ol>
