@@ -61,8 +61,7 @@ var createBrowserModelConstructor = function () {
             description: 'Static keys that user wants to send to the browser',
             type: 'Identifier',
             required: true
-        }],
-       returns: 'promise'
+        }]
      }];
 
     return BrowserModel;
