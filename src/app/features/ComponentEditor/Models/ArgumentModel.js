@@ -66,8 +66,12 @@ var createArgumentModelConstructor = function (
             return ast.identifier(parameter.variableName);
         } else if (result) {
             return ast.identifier(this.value);
-        } else if (this.value) {
-            return ast.literal(this.value);
+        } else if (this.value) {            
+            if (this.value.includes('protractor.Key')) {
+                return ast.identifier(this.value);
+            } else {
+                return ast.literal(this.value);
+            }
         } else {
             return ast.literal(null);
         }

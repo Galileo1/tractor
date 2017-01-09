@@ -61,9 +61,12 @@ var createInteractionModelConstructor = function (
                 }
             }
         });
+        this.staticKey = _.first(this.staticKeys);
     };
 
-    return InteractionModel;
+    InteractionModel.prototype.staticKeys =  ['ENTER', 'SHIFT'];
+
+    return InteractionModel;    
 
     function toAST () {
         this.resultFunctionExpression = ast.functionExpression();
@@ -81,11 +84,23 @@ var createInteractionModelConstructor = function (
     }
 
     function interactionAST () {
+        var argValue = this.staticKey;
+
         var template = '<%= element %>';
         if (this.element.variableName !== 'browser') {
             template = 'self.' + template;
+        } else {
+            template += '.actions()';
         }
-        template += '.<%= method %>(%= argumentValues %);';
+
+        template += '.<%= method %>(%= argumentValues %)';
+
+        if (this.methodInstance.name === 'sendKeys' && this.element.variableName === 'browser') {
+            _.map(this.methodInstance.arguments, function (argument) {               
+                argument.value = "protractor.Key." + argValue;
+           });
+           template += '.perform();';
+        }
 
         var element = ast.identifier(this.element.variableName);
         var method = ast.identifier(this.methodInstance.name);
